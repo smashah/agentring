@@ -25,12 +25,27 @@ pub fn run(config: Config) -> Result<(), String> {
     let injector = Injector::new().ok();
     let mappings = config.mappings.to_map();
 
+    // Seed the editable combo fields from the current mappings, in stable order.
+    let mut combo_inputs = std::collections::HashMap::new();
+    for (name, action) in config.mappings.iter() {
+        combo_inputs.insert(name.to_string(), action_to_input(action));
+    }
+
+    // Seed connection status immediately so a ring paired before launch shows
+    // as connected without waiting for a gesture or the match callback.
+    #[cfg(target_os = "macos")]
+    state
+        .ring_connected
+        .store(hid::macos::ring_present(), Ordering::Relaxed);
+
     let ui = RingApp {
         state,
         mappings,
         injector,
         grx,
         config,
+        combo_inputs,
+        combo_errors: std::collections::HashMap::new(),
     };
 
     let opts = eframe::NativeOptions {
@@ -49,6 +64,54 @@ struct RingApp {
     injector: Option<Injector>,
     grx: mpsc::Receiver<crate::gestures::Gesture>,
     config: Config,
+    /// Editable combo text per gesture name (e.g. "cmd+enter").
+    combo_inputs: std::collections::HashMap<String, String>,
+    /// Parse error per gesture name, shown inline; absent when valid.
+    combo_errors: std::collections::HashMap<String, String>,
+}
+
+/// Render an action as an editable combo string ("" for none).
+fn action_to_input(action: &crate::actions::Action) -> String {
+    match action {
+        crate::actions::Action::None => String::new(),
+        other => other.label(),
+    }
+}
+
+fn config_file_path() -> std::path::PathBuf {
+    let dir = std::env::var("HOME")
+        .map(|h| std::path::PathBuf::from(h).join(".config/agentring"))
+        .unwrap_or_else(|_| std::path::PathBuf::from(".agentring"));
+    let _ = std::fs::create_dir_all(&dir);
+    dir.join("config.toml")
+}
+
+impl RingApp {
+    /// Apply an edited combo to a gesture: update the live inject map, the
+    /// persisted config struct, and write config.toml. Records a parse error
+    /// instead when the text is invalid.
+    fn apply_combo(&mut self, gesture: &str, text: &str) {
+        match crate::actions::parse_combo(text) {
+            Ok(action) => {
+                self.combo_errors.remove(gesture);
+                self.mappings.insert(gesture.to_string(), action.clone());
+                match gesture {
+                    "tap" => self.config.mappings.tap = action,
+                    "swipe_up" => self.config.mappings.swipe_up = action,
+                    "swipe_down" => self.config.mappings.swipe_down = action,
+                    "swipe_left" => self.config.mappings.swipe_left = action,
+                    "swipe_right" => self.config.mappings.swipe_right = action,
+                    _ => {}
+                }
+                if let Ok(toml) = self.config.to_toml() {
+                    let _ = std::fs::write(config_file_path(), toml);
+                }
+            }
+            Err(e) => {
+                self.combo_errors.insert(gesture.to_string(), e);
+            }
+        }
+    }
 }
 
 impl eframe::App for RingApp {
@@ -58,6 +121,11 @@ impl eframe::App for RingApp {
         {
             self.state.accessibility_ok.store(crate::permissions::accessibility_granted(), Ordering::Relaxed);
             self.state.input_monitoring_ok.store(crate::permissions::input_monitoring_granted(), Ordering::Relaxed);
+            // NOTE: no background HID polling here. Re-scanning by opening an
+            // IOHIDManager on a timer churned the input system and made global
+            // hotkeys (e.g. CleanShot) unresponsive. Presence updates come from
+            // the startup seed, the value-callback liveness flip, and the manual
+            // Refresh button only.
         }
 
         // drain gestures, fire mapped actions, record for the monitor
@@ -91,7 +159,16 @@ impl eframe::App for RingApp {
 
             // status rows
             ui.add_space(6.0);
-            status_row(ui, "Ring connected", ring, "No ring detected — pair the WX02 over Bluetooth");
+            ui.horizontal(|ui| {
+                status_row(ui, "Ring connected", ring, "No ring detected — pair the WX02 over Bluetooth, then Refresh");
+                if ui.button("↻ Refresh").on_hover_text("Re-scan for the ring now").clicked() {
+                    #[cfg(target_os = "macos")]
+                    {
+                        let present = crate::hid::macos::ring_present();
+                        self.state.ring_connected.store(present, Ordering::Relaxed);
+                    }
+                }
+            });
             status_row(ui, "Input Monitoring", im, "Grant in System Settings > Privacy & Security > Input Monitoring");
             status_row(ui, "Accessibility", ax, "Grant in System Settings > Privacy & Security > Accessibility");
 
@@ -156,13 +233,31 @@ impl eframe::App for RingApp {
             ui.add_space(10.0);
             ui.separator();
             ui.label(RichText::new("Mappings").strong());
-            egui::Grid::new("map").num_columns(2).spacing([16.0, 4.0]).show(ui, |ui| {
-                for (gesture, action) in self.config.mappings.iter() {
+            ui.label(RichText::new("Type a combo — e.g. cmd+enter, option+space, ctrl+shift+4, or leave blank for none").weak().size(11.0));
+            ui.add_space(4.0);
+            let gestures = ["tap", "swipe_up", "swipe_down", "swipe_left", "swipe_right"];
+            let mut pending: Option<(String, String)> = None;
+            egui::Grid::new("map").num_columns(2).spacing([12.0, 6.0]).show(ui, |ui| {
+                for gesture in gestures {
                     ui.label(gesture);
-                    ui.label(action.label());
+                    let entry = self.combo_inputs.entry(gesture.to_string()).or_default();
+                    let resp = ui.add(
+                        egui::TextEdit::singleline(entry)
+                            .desired_width(180.0)
+                            .hint_text("none"),
+                    );
+                    if resp.changed() {
+                        pending = Some((gesture.to_string(), entry.clone()));
+                    }
+                    if let Some(err) = self.combo_errors.get(gesture) {
+                        ui.label(RichText::new(format!("⚠ {err}")).color(Color32::from_rgb(220, 120, 90)).size(11.0));
+                    }
                     ui.end_row();
                 }
             });
+            if let Some((gesture, text)) = pending {
+                self.apply_combo(&gesture, &text);
+            }
         });
     }
 }

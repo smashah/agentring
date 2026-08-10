@@ -41,6 +41,8 @@ extern "C" {
         mode: core_foundation_sys::string::CFStringRef,
     );
     fn IOHIDManagerOpen(mgr: IOHIDManagerRef, options: u32) -> c_int;
+    fn IOHIDManagerClose(mgr: IOHIDManagerRef, options: u32) -> c_int;
+    fn IOHIDManagerCopyDevices(mgr: IOHIDManagerRef) -> *const c_void;
     fn IOHIDValueGetElement(value: IOHIDValueRef) -> IOHIDElementRef;
     fn IOHIDValueGetIntegerValue(value: IOHIDValueRef) -> isize;
     fn IOHIDElementGetUsagePage(elem: IOHIDElementRef) -> u32;
@@ -61,6 +63,8 @@ extern "C" {
         the_type: c_int,
         value_ptr: *const c_void,
     ) -> *const c_void;
+    fn CFSetGetCount(set: *const c_void) -> isize;
+    fn CFRelease(cf: *const c_void);
     static kCFTypeDictionaryKeyCallBacks: c_void;
     static kCFTypeDictionaryValueCallBacks: c_void;
 }
@@ -92,6 +96,9 @@ extern "C" fn on_value(
         return;
     }
     let ctx = unsafe { &mut *(context as *mut Ctx) };
+    // Any value from the ring proves it is connected — the strongest liveness
+    // signal we have, independent of whether the match callback ever fired.
+    ctx.state.ring_connected.store(true, Ordering::Relaxed);
     let (page, usage, val) = unsafe {
         let elem = IOHIDValueGetElement(value);
         (
@@ -172,7 +179,7 @@ pub fn run(tx: Sender<Gesture>, state: SharedState) -> Result<(), String> {
             kCFRunLoopDefaultMode,
         );
 
-        let ret = IOHIDManagerOpen(mgr, 1); // kIOHIDOptionsTypeSeizeDevice — exclusive, suppresses the ring's own events
+        let ret = IOHIDManagerOpen(mgr, 0); // shared — seize broke value-callback delivery via the manager
         if ret != 0 {
             return Err(format!(
                 "IOHIDManagerOpen failed (0x{ret:08X}) — grant Input Monitoring to agentring in System Settings > Privacy & Security"
@@ -182,4 +189,58 @@ pub fn run(tx: Sender<Gesture>, state: SharedState) -> Result<(), String> {
         CFRunLoop::run_current();
     }
     Ok(())
+}
+
+/// Synchronous check: is the ring currently present on the system?
+///
+/// Creates a short-lived IOHIDManager matching the ring's (Apple-spoofed)
+/// VID/PID — the same identifier the reader uses and which resolves to the WX02
+/// in practice — enumerates matched devices, and tears the manager down. Safe to
+/// call from the UI thread on demand (e.g. a Refresh button); it opens in shared
+/// mode so it never disturbs the reader's own manager. Returns false if the
+/// device set is empty or Input Monitoring is not yet granted.
+pub fn ring_present() -> bool {
+    unsafe {
+        let matching = CFDictionaryCreateMutable(
+            std::ptr::null(),
+            0,
+            &kCFTypeDictionaryKeyCallBacks as *const _ as *const c_void,
+            &kCFTypeDictionaryValueCallBacks as *const _ as *const c_void,
+        );
+        if matching.is_null() {
+            return false;
+        }
+        let vid_key = CFString::new("VendorID");
+        let pid_key = CFString::new("ProductID");
+        CFDictionarySetValue(
+            matching,
+            vid_key.as_concrete_TypeRef() as *const c_void,
+            cfnum(APPLE_VID),
+        );
+        CFDictionarySetValue(
+            matching,
+            pid_key.as_concrete_TypeRef() as *const c_void,
+            cfnum(APPLE_PID),
+        );
+
+        let mgr = IOHIDManagerCreate(std::ptr::null(), 0);
+        if mgr.is_null() {
+            CFRelease(matching as *const c_void);
+            return false;
+        }
+        IOHIDManagerSetDeviceMatching(mgr, matching);
+        let _ = IOHIDManagerOpen(mgr, 0);
+        let devices = IOHIDManagerCopyDevices(mgr);
+        let count = if devices.is_null() {
+            0
+        } else {
+            let c = CFSetGetCount(devices);
+            CFRelease(devices);
+            c
+        };
+        let _ = IOHIDManagerClose(mgr, 0);
+        CFRelease(mgr as *const c_void);
+        CFRelease(matching as *const c_void);
+        count > 0
+    }
 }
