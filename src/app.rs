@@ -6,6 +6,8 @@ use crate::inject::Injector;
 use crate::state::SharedState;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc;
+use tray_icon::menu::{Menu, MenuEvent, MenuId, MenuItem, PredefinedMenuItem};
+use tray_icon::{TrayIcon, TrayIconBuilder};
 
 pub fn run(config: Config) -> Result<(), String> {
     let state = SharedState::default();
@@ -46,6 +48,9 @@ pub fn run(config: Config) -> Result<(), String> {
         config,
         combo_inputs,
         combo_errors: std::collections::HashMap::new(),
+        _tray: None,
+        tray_show_id: None,
+        tray_quit_id: None,
     };
 
     let opts = eframe::NativeOptions {
@@ -54,8 +59,64 @@ pub fn run(config: Config) -> Result<(), String> {
             .with_title("Agent Ring"),
         ..Default::default()
     };
-    eframe::run_native("Agent Ring", opts, Box::new(|_cc| Ok(Box::new(ui))))
-        .map_err(|e| format!("window failed: {e}"))
+    // The tray must be created on the main thread after the event loop is up, so
+    // build it inside the app creator closure and hand it to the app to own.
+    eframe::run_native(
+        "Agent Ring",
+        opts,
+        Box::new(move |_cc| {
+            let mut ui = ui;
+            match build_tray() {
+                Some((tray, show_id, quit_id)) => {
+                    ui._tray = Some(tray);
+                    ui.tray_show_id = Some(show_id);
+                    ui.tray_quit_id = Some(quit_id);
+                }
+                None => eprintln!("agentring: menu bar icon failed to initialize"),
+            }
+            Ok(Box::new(ui))
+        }),
+    )
+    .map_err(|e| format!("window failed: {e}"))
+}
+
+/// Build the menu-bar tray icon with an Open/Quit menu. Returns the icon and the
+/// menu item ids to match against click events.
+fn build_tray() -> Option<(TrayIcon, MenuId, MenuId)> {
+    let menu = Menu::new();
+    let show = MenuItem::new("Open Agent Ring", true, None);
+    let quit = MenuItem::new("Quit Agent Ring", true, None);
+    menu.append(&show).ok()?;
+    menu.append(&PredefinedMenuItem::separator()).ok()?;
+    menu.append(&quit).ok()?;
+    let show_id = show.id().clone();
+    let quit_id = quit.id().clone();
+
+    let mut builder = TrayIconBuilder::new()
+        .with_menu(Box::new(menu))
+        .with_tooltip("Agent Ring")
+        // Template mode: macOS renders the alpha silhouette in the menu-bar
+        // color (white on dark, black on light), adapting to appearance instead
+        // of a fixed color that would go invisible in the other mode.
+        .with_icon_as_template(true);
+    if let Some(icon) = load_tray_icon() {
+        builder = builder.with_icon(icon);
+    }
+    let tray = builder.build().ok()?;
+    Some((tray, show_id, quit_id))
+}
+
+/// Load the ring logo as a menu-bar-sized template icon (22×22 RGBA). The image
+/// is a black silhouette on transparent; template mode uses its alpha and
+/// recolours to match the menu bar.
+fn load_tray_icon() -> Option<tray_icon::Icon> {
+    let bytes = include_bytes!("../assets/logo_menubar.png");
+    let img = image::load_from_memory(bytes)
+        .ok()?
+        .resize_exact(22, 22, image::imageops::FilterType::Lanczos3)
+        .to_rgba8();
+    let (w, h) = img.dimensions();
+    tray_icon::Icon::from_rgba(img.into_raw(), w, h).ok()
 }
 
 struct RingApp {
@@ -68,6 +129,10 @@ struct RingApp {
     combo_inputs: std::collections::HashMap<String, String>,
     /// Parse error per gesture name, shown inline; absent when valid.
     combo_errors: std::collections::HashMap<String, String>,
+    /// Menu-bar tray icon; kept alive for the process lifetime (drop removes it).
+    _tray: Option<TrayIcon>,
+    tray_show_id: Option<MenuId>,
+    tray_quit_id: Option<MenuId>,
 }
 
 /// Render an action as an editable combo string ("" for none).
@@ -116,6 +181,22 @@ impl RingApp {
 
 impl eframe::App for RingApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+        // Menu-bar tray: handle Open / Quit clicks.
+        while let Ok(ev) = MenuEvent::receiver().try_recv() {
+            if Some(&ev.id) == self.tray_show_id.as_ref() {
+                ctx.send_viewport_cmd(eframe::egui::ViewportCommand::Visible(true));
+                ctx.send_viewport_cmd(eframe::egui::ViewportCommand::Focus);
+            } else if Some(&ev.id) == self.tray_quit_id.as_ref() {
+                std::process::exit(0);
+            }
+        }
+        // Closing the window hides to the menu bar instead of quitting, so the
+        // ring keeps working and the tray icon stays. Quit is from the tray menu.
+        if ctx.input(|i| i.viewport().close_requested()) {
+            ctx.send_viewport_cmd(eframe::egui::ViewportCommand::CancelClose);
+            ctx.send_viewport_cmd(eframe::egui::ViewportCommand::Visible(false));
+        }
+
         // refresh live permission status each frame
         #[cfg(target_os = "macos")]
         {
