@@ -78,7 +78,8 @@ fn malformed_toml_errors() {
 fn load_or_default_falls_back_when_missing() {
     let cfg = Config::load_or_default(std::path::Path::new(
         "/definitely/not/here/agentring-m0-test.toml",
-    ));
+    ))
+    .unwrap();
     assert_eq!(cfg.mappings.tap.label(), "enter");
     assert_eq!(cfg.mappings.swipe_up.label(), "option+space");
 }

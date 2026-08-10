@@ -15,6 +15,7 @@ use crate::profile::DeviceProfile;
 
 /// Top-level config.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
     pub version: u32,
@@ -27,6 +28,7 @@ pub struct Config {
 /// Per-gesture action bindings. Field names are stable snake_case identifiers
 /// matching [`crate::gestures::Gesture::as_str`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GestureMappings {
     #[serde(default)]
     pub tap: Action,
@@ -131,12 +133,15 @@ impl Config {
     }
 
     /// Load config from `path`, falling back to [`Config::default_for_wx02`]
-    /// when the file does not exist. Parse errors propagate; a missing file
-    /// does not (M0 has no logging layer, so we fail open silently).
-    pub fn load_or_default(path: &Path) -> Self {
+    /// only when the file does not exist (M0 has no logging layer, so a
+    /// not-yet-created config fails open silently). A malformed file or any
+    /// other IO error (e.g. permission denied) propagates as a
+    /// [`ConfigError`] so user mistakes are not masked.
+    pub fn load_or_default(path: &Path) -> Result<Self, ConfigError> {
         match std::fs::read_to_string(path) {
-            Ok(s) => Self::from_toml(&s).unwrap_or_else(|_| Self::default_for_wx02()),
-            Err(_) => Self::default_for_wx02(),
+            Ok(s) => Config::from_toml(&s),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Self::default_for_wx02()),
+            Err(e) => Err(e.into()),
         }
     }
 }
@@ -205,9 +210,39 @@ tap = { type = "none" }
     #[test]
     fn load_or_default_falls_back_when_missing() {
         let path = Path::new("/nonexistent/path/that/should/not/exist/agentring.toml");
-        let cfg = Config::load_or_default(path);
+        let cfg = Config::load_or_default(path).unwrap();
         assert_eq!(cfg.mappings.tap.label(), "enter");
         assert_eq!(cfg.mappings.swipe_up.label(), "option+space");
+    }
+
+    #[test]
+    fn malformed_existing_config_errors() {
+        // A malformed file that *exists* must propagate a parse error rather
+        // than silently falling back to defaults.
+        let path = std::env::temp_dir().join(format!("agentring-test-{}.toml", std::process::id()));
+        std::fs::write(&path, "not = = valid").expect("write temp config");
+        let res = Config::load_or_default(&path);
+        let _ = std::fs::remove_file(&path);
+        match res {
+            Err(ConfigError::De(_)) => {}
+            other => panic!("expected De error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn unknown_mapping_field_errors() {
+        // A typo'd gesture key under [mappings] must be rejected, not silently
+        // ignored.
+        let toml = r#"
+[mappings]
+tap = { type = "none" }
+swipe_uyp = { type = "none" }
+"#;
+        let res = Config::from_toml(toml);
+        match res {
+            Err(ConfigError::De(_)) => {}
+            other => panic!("expected De error, got {other:?}"),
+        }
     }
 
     #[test]

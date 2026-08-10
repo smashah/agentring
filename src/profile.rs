@@ -81,10 +81,17 @@ impl DeviceProfile {
         }
     }
 
-    /// Required usage pages — derived from the field map so profiles stay
-    /// internally consistent. The WX02 field map references pages 1 and 13.
+    /// Required usage pages — the sorted, deduplicated union of the pages
+    /// declared in `usage_pages` and the pages referenced by the field map.
+    /// For the WX02 profile this yields generic desktop (0x01), consumer
+    /// (0x0C), and digitizer (0x0D).
     pub fn required_usage_pages(&self) -> Vec<u16> {
-        let mut pages: Vec<u16> = self.fields.values().map(|(p, _)| *p).collect();
+        let mut pages: Vec<u16> = self
+            .usage_pages
+            .iter()
+            .copied()
+            .chain(self.fields.values().map(|(p, _)| *p))
+            .collect();
         pages.sort_unstable();
         pages.dedup();
         pages
@@ -117,14 +124,20 @@ impl DeviceId {
     }
 
     /// A complete, honest WX02 descriptor — product string, Bluetooth
-    /// transport, and the digitizer + generic desktop usage pages.
+    /// transport, and the generic desktop, consumer, and digitizer usage
+    /// pages. VID/PID spoofing (0x05AC / 0x0220) is tolerated because the
+    /// structural signals are all present.
     pub fn wx02_bluetooth() -> Self {
         Self {
             vendor_id: Some(0x05AC),
             product_id: Some(0x0220),
             product_string: Some("WX02".to_string()),
             transport: Some(Transport::Bluetooth),
-            usage_pages: vec![usage::PAGE_GENERIC_DESKTOP, usage::PAGE_DIGITIZER],
+            usage_pages: vec![
+                usage::PAGE_GENERIC_DESKTOP,
+                usage::PAGE_CONSUMER,
+                usage::PAGE_DIGITIZER,
+            ],
         }
     }
 }
@@ -207,7 +220,11 @@ mod tests {
         assert_eq!(p.transport, Transport::Bluetooth);
         assert_eq!(
             p.required_usage_pages(),
-            vec![usage::PAGE_GENERIC_DESKTOP, usage::PAGE_DIGITIZER]
+            vec![
+                usage::PAGE_GENERIC_DESKTOP,
+                usage::PAGE_CONSUMER,
+                usage::PAGE_DIGITIZER,
+            ]
         );
         assert_eq!(
             p.fields.get(&Field::X).copied(),
@@ -263,11 +280,29 @@ mod tests {
     fn missing_usage_page_rejected() {
         let profile = DeviceProfile::wx02();
         let mut dev = DeviceId::wx02_bluetooth();
-        // Drop the digitizer page.
-        dev.usage_pages = vec![usage::PAGE_GENERIC_DESKTOP];
+        // Drop the digitizer page (keep generic desktop + consumer).
+        dev.usage_pages = vec![usage::PAGE_GENERIC_DESKTOP, usage::PAGE_CONSUMER];
         match profile.matches(&dev) {
             MatchResult::Reject(RejectReason::MissingUsagePages(missing)) => {
                 assert_eq!(missing, vec![usage::PAGE_DIGITIZER]);
+            }
+            other => panic!("expected MissingUsagePages, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn missing_consumer_usage_page_rejected() {
+        // A candidate that is otherwise a valid WX02 (product "WX02",
+        // Bluetooth) but is missing the consumer usage page must be rejected
+        // with MissingUsagePages naming page 0x0C. This guards the union of
+        // declared `usage_pages` and field-map pages: previously the consumer
+        // page was not enforced and a candidate lacking it still matched.
+        let profile = DeviceProfile::wx02();
+        let mut dev = DeviceId::wx02_bluetooth();
+        dev.usage_pages = vec![usage::PAGE_GENERIC_DESKTOP, usage::PAGE_DIGITIZER];
+        match profile.matches(&dev) {
+            MatchResult::Reject(RejectReason::MissingUsagePages(missing)) => {
+                assert_eq!(missing, vec![usage::PAGE_CONSUMER]);
             }
             other => panic!("expected MissingUsagePages, got {other:?}"),
         }

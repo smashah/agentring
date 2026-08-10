@@ -58,7 +58,8 @@ fn wrong_product_string_rejected() {
 #[test]
 fn missing_digitizer_usage_page_rejected() {
     let mut dev = DeviceId::wx02_bluetooth();
-    dev.usage_pages = vec![0x01]; // generic desktop only, no digitizer (0x0D)
+    // Generic desktop + consumer only, no digitizer (0x0D).
+    dev.usage_pages = vec![0x01, 0x0C];
     match DeviceProfile::wx02().matches(&dev) {
         MatchResult::Reject(RejectReason::MissingUsagePages(missing)) => {
             assert_eq!(missing, vec![0x0D]);
