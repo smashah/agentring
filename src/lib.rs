@@ -6,6 +6,7 @@ pub mod actions;
 pub mod config;
 pub mod gestures;
 pub mod profile;
+pub mod state;
 
 #[cfg(target_os = "macos")]
 pub mod app;

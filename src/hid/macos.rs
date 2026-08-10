@@ -9,6 +9,8 @@ use core_foundation_sys::base::CFAllocatorRef;
 use core_foundation_sys::dictionary::CFMutableDictionaryRef;
 use std::ffi::c_void;
 use std::os::raw::c_int;
+use crate::state::SharedState;
+use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
 
 // The ring spoofs a real Apple keyboard's IDs. We use them only for the coarse
@@ -24,16 +26,15 @@ type IOHIDValueRef = *mut c_void;
 #[allow(non_camel_case_types)]
 type IOHIDElementRef = *mut c_void;
 type IOHIDValueCallback = extern "C" fn(*mut c_void, c_int, *mut c_void, IOHIDValueRef);
+type IOHIDDeviceCallback = extern "C" fn(*mut c_void, c_int, *mut c_void, *mut c_void);
 
 #[link(name = "IOKit", kind = "framework")]
 extern "C" {
     fn IOHIDManagerCreate(allocator: CFAllocatorRef, options: u32) -> IOHIDManagerRef;
     fn IOHIDManagerSetDeviceMatching(mgr: IOHIDManagerRef, matching: CFMutableDictionaryRef);
-    fn IOHIDManagerRegisterInputValueCallback(
-        mgr: IOHIDManagerRef,
-        cb: IOHIDValueCallback,
-        context: *mut c_void,
-    );
+    fn IOHIDManagerRegisterInputValueCallback(mgr: IOHIDManagerRef, cb: IOHIDValueCallback, context: *mut c_void);
+    fn IOHIDManagerRegisterDeviceMatchingCallback(mgr: IOHIDManagerRef, cb: IOHIDDeviceCallback, context: *mut c_void);
+    fn IOHIDManagerRegisterDeviceRemovalCallback(mgr: IOHIDManagerRef, cb: IOHIDDeviceCallback, context: *mut c_void);
     fn IOHIDManagerScheduleWithRunLoop(
         mgr: IOHIDManagerRef,
         run_loop: *mut c_void,
@@ -71,6 +72,14 @@ struct Ctx {
     last_x: Option<i32>,
     last_y: Option<i32>,
     tx: Sender<Gesture>,
+    state: SharedState,
+}
+
+extern "C" fn on_matched(ctx: *mut c_void, _r: c_int, _s: *mut c_void, _d: *mut c_void) {
+    if !ctx.is_null() { unsafe { &*(ctx as *const Ctx) }.state.ring_connected.store(true, Ordering::Relaxed); }
+}
+extern "C" fn on_removed(ctx: *mut c_void, _r: c_int, _s: *mut c_void, _d: *mut c_void) {
+    if !ctx.is_null() { unsafe { &*(ctx as *const Ctx) }.state.ring_connected.store(false, Ordering::Relaxed); }
 }
 
 extern "C" fn on_value(
@@ -117,7 +126,7 @@ fn cfnum(n: i32) -> *const c_void {
 /// Start the IOHIDManager on the CURRENT thread's run loop. Blocks in CFRunLoopRun.
 /// Recognised gestures are sent on `tx`. Returns Err if the manager can't open
 /// (almost always missing Input Monitoring permission).
-pub fn run(tx: Sender<Gesture>) -> Result<(), String> {
+pub fn run(tx: Sender<Gesture>, state: SharedState) -> Result<(), String> {
     unsafe {
         let matching = CFDictionaryCreateMutable(
             std::ptr::null(),
@@ -149,9 +158,12 @@ pub fn run(tx: Sender<Gesture>) -> Result<(), String> {
             last_x: None,
             last_y: None,
             tx,
+            state: state.clone(),
         });
         let ctx_ptr = Box::into_raw(ctx) as *mut c_void;
         IOHIDManagerRegisterInputValueCallback(mgr, on_value, ctx_ptr);
+        IOHIDManagerRegisterDeviceMatchingCallback(mgr, on_matched, ctx_ptr);
+        IOHIDManagerRegisterDeviceRemovalCallback(mgr, on_removed, ctx_ptr);
 
         let run_loop = CFRunLoop::get_current();
         IOHIDManagerScheduleWithRunLoop(
@@ -166,6 +178,7 @@ pub fn run(tx: Sender<Gesture>) -> Result<(), String> {
                 "IOHIDManagerOpen failed (0x{ret:08X}) — grant Input Monitoring to agentring in System Settings > Privacy & Security"
             ));
         }
+        state.input_monitoring_ok.store(true, Ordering::Relaxed);
         CFRunLoop::run_current();
     }
     Ok(())
