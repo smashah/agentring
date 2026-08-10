@@ -1,0 +1,20 @@
+[package]
+name = "agentring"
+version = "0.1.0"
+edition = "2021"
+description = "Cross-platform menu-bar app that remaps a Bluetooth finger-ring into keyboard shortcuts"
+license = "MIT"
+repository = "https://github.com/smashah/agentring"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+thiserror = "1"
+
+[lib]
+name = "agentring"
+path = "src/lib.rs"
+
+[[bin]]
+name = "agentring"
+path = "src/main.rs"
