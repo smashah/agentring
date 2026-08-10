@@ -172,7 +172,7 @@ pub fn run(tx: Sender<Gesture>, state: SharedState) -> Result<(), String> {
             kCFRunLoopDefaultMode,
         );
 
-        let ret = IOHIDManagerOpen(mgr, 0);
+        let ret = IOHIDManagerOpen(mgr, 1); // kIOHIDOptionsTypeSeizeDevice — exclusive, suppresses the ring's own events
         if ret != 0 {
             return Err(format!(
                 "IOHIDManagerOpen failed (0x{ret:08X}) — grant Input Monitoring to agentring in System Settings > Privacy & Security"
