@@ -9,6 +9,9 @@ pub mod profile;
 pub mod state;
 
 #[cfg(target_os = "macos")]
+pub mod permissions;
+
+#[cfg(target_os = "macos")]
 pub mod app;
 pub mod hid;
 pub mod inject;

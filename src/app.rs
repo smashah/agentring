@@ -7,11 +7,6 @@ use crate::state::SharedState;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc;
 
-#[link(name = "ApplicationServices", kind = "framework")]
-extern "C" {
-    fn AXIsProcessTrusted() -> bool;
-}
-
 pub fn run(config: Config) -> Result<(), String> {
     let state = SharedState::default();
 
@@ -58,11 +53,12 @@ struct RingApp {
 
 impl eframe::App for RingApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
-        // refresh accessibility status each frame
+        // refresh live permission status each frame
         #[cfg(target_os = "macos")]
-        self.state
-            .accessibility_ok
-            .store(unsafe { AXIsProcessTrusted() }, Ordering::Relaxed);
+        {
+            self.state.accessibility_ok.store(crate::permissions::accessibility_granted(), Ordering::Relaxed);
+            self.state.input_monitoring_ok.store(crate::permissions::input_monitoring_granted(), Ordering::Relaxed);
+        }
 
         // drain gestures, fire mapped actions, record for the monitor
         while let Ok(g) = self.grx.try_recv() {
@@ -108,12 +104,18 @@ impl eframe::App for RingApp {
                     .rounding(6.0)
                     .show(ui, |ui| {
                         ui.label(RichText::new("Setup needed").strong().color(Color32::from_rgb(240, 200, 90)));
-                        ui.label("Agent Ring needs both permissions above to read the ring and send keystrokes. Grant them, then relaunch.");
-                        if ui.button("Open Privacy & Security").clicked() {
-                            let _ = std::process::Command::new("open")
-                                .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
-                                .spawn();
-                        }
+                        ui.label("Agent Ring needs both permissions to read the ring and send keystrokes. Click Grant — macOS will prompt you and add Agent Ring to the list automatically.");
+                        ui.add_space(6.0);
+                        ui.horizontal(|ui| {
+                            if !im && ui.button("Grant Input Monitoring").clicked() {
+                                #[cfg(target_os = "macos")]
+                                { crate::permissions::request_input_monitoring(); }
+                            }
+                            if !ax && ui.button("Grant Accessibility").clicked() {
+                                #[cfg(target_os = "macos")]
+                                { crate::permissions::request_accessibility(); }
+                            }
+                        });
                     });
             }
 
