@@ -12,7 +12,7 @@
 
 ## RECOMMENDATION (read this first)
 
-**Finish the already-started Amazon Associates UK signup, then use the UK as the first live tag.** It is the **preferred primary** zero-inventory model — not the only one (AliExpress Affiliate below is the same zero-cost model with different geographic fit). A UK Associate tag earns on purchases a buyer makes on **Amazon.co.uk** after clicking from an approved property; **US buyers require a separate Amazon US enrollment and tag** — a UK tag does not earn on Amazon.com purchases. The commission rate is **3%**, the UK "All Other Categories" rate on the public UK rate card [12]. The WX02 ring does not map to a named UK category, so it is **modelled as UK "All Other Categories" pending category confirmation** after enrollment. At 3% on a ~$15–19 ring, the per-unit commission is small (~$0.45–0.57), but the effort is one enrollment and one tagged link.
+**Use the newly created Amazon Associates UK account, `agentring-21`, as the first live tag.** It is the **preferred primary** zero-inventory model — not the only one (AliExpress Affiliate below is the same zero-cost model with different geographic fit). A UK Associate tag earns on purchases a buyer makes on **Amazon.co.uk** after clicking from an approved property; **US buyers require a separate Amazon US enrollment and tag** — a UK tag does not earn on Amazon.com purchases. The commission rate is **3%**, the UK "All Other Categories" rate on the public UK rate card [12]. The WX02 ring does not map to a named UK category, so it is **modelled as UK "All Other Categories" pending category confirmation**. At 3% on a ~$15–19 ring, the per-unit commission is small (~$0.45–0.57), but the effort is one enrollment and one tagged link.
 
 **Do not enrol every Amazon locale now.** OneLink is geo-redirection across a defined set of stores, not a worldwide tag [14]. Add the US only when Agent Ring has a verified US SKU and audience. From the US OneLink dashboard, Canada and EU5 can use the simplified single-store-ID controls described by Amazon [15], but the UK documentation still says country accounts must be created separately [16]. Treat that as a documentation mismatch: enable or link Canada, Germany, France, Italy, and Spain only through controls proven in the live dashboard. Japan, Singapore, Netherlands, Saudi Arabia, Poland, Sweden, and Australia explicitly require separate local accounts before their Store IDs can be linked [15].
 
@@ -25,7 +25,7 @@
 **Do NOT pursue Alibaba bulk resale now.** The unit economics are excellent on paper ($2.91/unit at 100 pcs vs $15–19 retail), but resale requires inventory, shipping, returns handling, customer support, product-liability cover, a storefront, and UK VAT registration once turnover exceeds £90,000 [13]. This is a business, not a link. Capture it as the Phase 2 path to Mohammed's ~$70 own-brand ring, not as the gate-opener.
 
 **Sequenced path:**
-1. Complete the Amazon UK CAPTCHA and receive the first live tag
+1. Use the confirmed UK Store ID/tag `agentring-21`
 2. Publish real Agent Ring content at `agentr.ing` before Amazon reviews the submitted properties
 3. Identify and physically verify 1–2 UK SKU candidates; then generate direct tagged Amazon links
 4. Enrol Alibaba.com Affiliate for the exact WX02 wholesale listing and AliExpress after its portal exposes the real campaign economics
@@ -101,7 +101,7 @@ Do not create all of these accounts speculatively. Every separate account carrie
 
 ### Enrollment URL
 
-**https://affiliate-program.amazon.co.uk** — the application was started with `petrol.now`, `openwa.dev`, and `agentr.ing`. Amazon presented a CAPTCHA after Finish; no Associate tag exists until that human challenge completes and the confirmation surface is shown. Amazon reviews every submitted Site for public, original, active content, and tagged links must appear only on declared Sites [17]. After account creation, keep `agentr.ing` as the primary promotional property once it is live; remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring affiliate links genuinely appear there. Do not force unrelated cross-site content.
+**https://affiliate-program.amazon.co.uk** — Amazon's confirmation page shows Store ID/tag `agentring-21` with **Success**. Amazon says it reviews the submitted Sites after three qualified sales [17]. The application listed `petrol.now`, `openwa.dev`, and `agentr.ing`; keep `agentr.ing` as the primary promotional property once it is live, and remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear there. Amazon reviews every submitted Site for public, original, active content, and tagged links must appear only on declared Sites [17]; it does not require every declared Site to discuss Agent Ring. Do not force unrelated cross-site content.
 
 ### Effort
 
@@ -364,13 +364,13 @@ Any page containing tagged links should carry a clear disclosure such as: *"Agen
 
 ---
 
-## The exact human enrollment action (Amazon Associates UK)
+## Confirmed enrollment outcome and next human account action
 
-The application form has been completed and Finish was submitted. Amazon is currently showing a CAPTCHA, so Mohammed's exact remaining account action is to solve that challenge in the already-open Chrome tab. No Associate ID or review state exists until the confirmation page or account dashboard proves account creation.
+The confirmation surface proves that the Amazon Associates UK account was created successfully with Store ID/tag `agentring-21`. Amazon says its team reviews the submitted Sites after three qualified sales [17]. No additional EU locale was submitted.
 
-After the CAPTCHA, capture the issued Store ID/tag and the dashboard's application state. Keep `agentr.ing` as the primary declared promotional property once it is live. Remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear on them; Amazon's evidence-backed rule is that it reviews every submitted Site for public, original, active content and that tagged links appear only on declared Sites [17], not that every declared Site must specifically discuss Agent Ring.
+The already-open tab is parked at Amazon's next account boundary: **Enter Payment and Tax Information**, with **Now** and **Later** choices. Mohammed must choose when to begin that financial/tax setup; an agent must not choose the timing or complete a tax interview on his behalf.
 
-Then generate a direct tagged link only for a physically verified UK ring SKU. Amazon reviews the application after three qualified sales within 180 days [17], so receiving a tag starts the review clock but does not complete the four product gates below.
+Keep `agentr.ing` as the primary declared promotional property once it is live. Remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear on them. Then generate a direct tagged link only for a physically verified UK ring SKU. Receiving the tag starts the review clock but does not complete the remaining product gates below.
 
 ---
 
@@ -378,7 +378,7 @@ Then generate a direct tagged link only for a physically verified UK ring SKU. A
 
 Per `docs/MONETIZATION.md`, the do-not-publish checklist:
 
-- [ ] Affiliate program(s) enrolled, tag/ID in hand ← **ONE of four gates, not the only one**
+- [x] Affiliate program enrolled, tag/ID in hand: `agentring-21` ← **ONE of four gates, not the only one**
 - [ ] Recommended ring SKU(s) confirmed working ← **identify 1–2 ASIN candidates, then test**
 - [ ] Tagged buy-links in README + onboarding ← **paste the tagged link**
 - [ ] Then, and only then: flip repo public
@@ -403,7 +403,7 @@ These rings are **compatibility candidates** — they appear to be the same WX02
 
 ## What this plan does NOT do
 
-- Does not claim Amazon UK enrollment is complete while the CAPTCHA remains and no tag exists
+- Does not claim Amazon's application review is complete; account creation succeeded, but review follows three qualified sales
 - Does not flip the repo public (gated on enrollment + tagged links)
 - Does not modify the README or onboarding code (that is implementation, not research)
 - Does not order any inventory (Model 3 is deferred)
