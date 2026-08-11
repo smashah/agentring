@@ -13,12 +13,12 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Agent Ring — remap a Bluetooth finger-ring into keyboard shortcuts',
+        title: 'Agent Ring — your ring, any shortcut',
       },
       {
         name: 'description',
         content:
-          'Agent Ring is a lightweight native app that captures the HID reports of a WX02-class Bluetooth finger-ring, classifies each gesture, and injects the keyboard shortcut you mapped. macOS first, Windows 11 planned.',
+          'Agent Ring turns the taps, swipes and long presses of a WX02-class Bluetooth ring into the keyboard shortcuts you choose. Built for macOS, with Windows 11 planned.',
       },
       {
         name: 'color-scheme',
