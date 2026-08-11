@@ -12,7 +12,7 @@ pub struct SharedState {
     pub accessibility_ok: Arc<AtomicBool>,
     pub enabled: Arc<AtomicBool>,
     pub last: Arc<Mutex<Option<(Gesture, Instant, String)>>>, // gesture, when, action label
-    pub log: Arc<Mutex<VecDeque<(Gesture, String)>>>,          // recent gestures + action
+    pub log: Arc<Mutex<VecDeque<(Gesture, String)>>>,         // recent gestures + action
     pub fire_count: Arc<Mutex<u64>>,
 }
 

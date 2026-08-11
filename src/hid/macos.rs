@@ -2,6 +2,7 @@
 //! validated Python `wx02-remap` prototype. Matches the ring by VID/PID for the
 //! manager filter, but gesture logic runs through the profile-checked classifier.
 use crate::gestures::{Gesture, GestureClassifier, RawEvent};
+use crate::state::SharedState;
 use core_foundation::base::TCFType;
 use core_foundation::runloop::{kCFRunLoopDefaultMode, CFRunLoop};
 use core_foundation::string::CFString;
@@ -9,7 +10,6 @@ use core_foundation_sys::base::CFAllocatorRef;
 use core_foundation_sys::dictionary::CFMutableDictionaryRef;
 use std::ffi::c_void;
 use std::os::raw::c_int;
-use crate::state::SharedState;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
 
@@ -32,9 +32,21 @@ type IOHIDDeviceCallback = extern "C" fn(*mut c_void, c_int, *mut c_void, *mut c
 extern "C" {
     fn IOHIDManagerCreate(allocator: CFAllocatorRef, options: u32) -> IOHIDManagerRef;
     fn IOHIDManagerSetDeviceMatching(mgr: IOHIDManagerRef, matching: CFMutableDictionaryRef);
-    fn IOHIDManagerRegisterInputValueCallback(mgr: IOHIDManagerRef, cb: IOHIDValueCallback, context: *mut c_void);
-    fn IOHIDManagerRegisterDeviceMatchingCallback(mgr: IOHIDManagerRef, cb: IOHIDDeviceCallback, context: *mut c_void);
-    fn IOHIDManagerRegisterDeviceRemovalCallback(mgr: IOHIDManagerRef, cb: IOHIDDeviceCallback, context: *mut c_void);
+    fn IOHIDManagerRegisterInputValueCallback(
+        mgr: IOHIDManagerRef,
+        cb: IOHIDValueCallback,
+        context: *mut c_void,
+    );
+    fn IOHIDManagerRegisterDeviceMatchingCallback(
+        mgr: IOHIDManagerRef,
+        cb: IOHIDDeviceCallback,
+        context: *mut c_void,
+    );
+    fn IOHIDManagerRegisterDeviceRemovalCallback(
+        mgr: IOHIDManagerRef,
+        cb: IOHIDDeviceCallback,
+        context: *mut c_void,
+    );
     fn IOHIDManagerScheduleWithRunLoop(
         mgr: IOHIDManagerRef,
         run_loop: *mut c_void,
@@ -80,10 +92,20 @@ struct Ctx {
 }
 
 extern "C" fn on_matched(ctx: *mut c_void, _r: c_int, _s: *mut c_void, _d: *mut c_void) {
-    if !ctx.is_null() { unsafe { &*(ctx as *const Ctx) }.state.ring_connected.store(true, Ordering::Relaxed); }
+    if !ctx.is_null() {
+        unsafe { &*(ctx as *const Ctx) }
+            .state
+            .ring_connected
+            .store(true, Ordering::Relaxed);
+    }
 }
 extern "C" fn on_removed(ctx: *mut c_void, _r: c_int, _s: *mut c_void, _d: *mut c_void) {
-    if !ctx.is_null() { unsafe { &*(ctx as *const Ctx) }.state.ring_connected.store(false, Ordering::Relaxed); }
+    if !ctx.is_null() {
+        unsafe { &*(ctx as *const Ctx) }
+            .state
+            .ring_connected
+            .store(false, Ordering::Relaxed);
+    }
 }
 
 extern "C" fn on_value(

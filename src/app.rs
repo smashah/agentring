@@ -1,12 +1,15 @@
 //! Agent Ring status & settings window (eframe). Shows ring connection, the two
 //! macOS permissions, a live gesture monitor, and the current mappings.
+use crate::actions::Action;
 use crate::config::Config;
 use crate::hid;
 use crate::inject::Injector;
 use crate::state::SharedState;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc;
-use tray_icon::menu::{Menu, MenuEvent, MenuId, MenuItem, PredefinedMenuItem};
+use tray_icon::menu::{
+    CheckMenuItem, IsMenuItem, Menu, MenuEvent, MenuId, MenuItem, PredefinedMenuItem, Submenu,
+};
 use tray_icon::{TrayIcon, TrayIconBuilder};
 
 pub fn run(config: Config) -> Result<(), String> {
@@ -48,9 +51,7 @@ pub fn run(config: Config) -> Result<(), String> {
         config,
         combo_inputs,
         combo_errors: std::collections::HashMap::new(),
-        _tray: None,
-        tray_show_id: None,
-        tray_quit_id: None,
+        tray: None,
     };
 
     let opts = eframe::NativeOptions {
@@ -66,12 +67,8 @@ pub fn run(config: Config) -> Result<(), String> {
         opts,
         Box::new(move |_cc| {
             let mut ui = ui;
-            match build_tray() {
-                Some((tray, show_id, quit_id)) => {
-                    ui._tray = Some(tray);
-                    ui.tray_show_id = Some(show_id);
-                    ui.tray_quit_id = Some(quit_id);
-                }
+            match build_tray(&ui.config) {
+                Some(tray) => ui.tray = Some(tray),
                 None => eprintln!("agentring: menu bar icon failed to initialize"),
             }
             Ok(Box::new(ui))
@@ -80,17 +77,70 @@ pub fn run(config: Config) -> Result<(), String> {
     .map_err(|e| format!("window failed: {e}"))
 }
 
-/// Build the menu-bar tray icon with an Open/Quit menu. Returns the icon and the
-/// menu item ids to match against click events.
-fn build_tray() -> Option<(TrayIcon, MenuId, MenuId)> {
+/// Owned handles for the menu-bar tray dropdown. The `TrayIcon` and every item
+/// handle are cheap Rc-style clones; keeping them alive for the process
+/// lifetime prevents the tray from being dropped (which removes it). Stashing
+/// the item handles lets us update their text / checkmark each frame and match
+/// click events against their IDs.
+struct TrayMenu {
+    _icon: TrayIcon,
+    ring_connected: CheckMenuItem,
+    input_monitoring: CheckMenuItem,
+    accessibility: CheckMenuItem,
+    remapping: CheckMenuItem,
+    last_gesture: MenuItem,
+    /// IDs of the Mappings submenu items — any click opens the settings window.
+    mapping_ids: Vec<MenuId>,
+    open_id: MenuId,
+    quit_id: MenuId,
+}
+
+/// Build the menu-bar tray icon with a rich Amphetamine-style dropdown: live
+/// status indicators, a remapping toggle, the last gesture line, a mappings
+/// submenu, and Open / Quit actions. Mapping text is built once from the
+/// initial config (editing happens in the settings window, which is what
+/// clicking a mapping opens anyway).
+fn build_tray(config: &Config) -> Option<TrayMenu> {
     let menu = Menu::new();
-    let show = MenuItem::new("Open Agent Ring", true, None);
+
+    let ring_connected = CheckMenuItem::new("Ring connected", true, false, None);
+    let input_monitoring = CheckMenuItem::new("Input Monitoring", true, false, None);
+    let accessibility = CheckMenuItem::new("Accessibility", true, false, None);
+    let remapping = CheckMenuItem::new("Remapping enabled", true, true, None);
+    let last_gesture = MenuItem::new("No gestures yet · 0 total", false, None);
+
+    let mapping_items: Vec<MenuItem> = config
+        .mappings
+        .iter()
+        .map(|(name, action)| {
+            let label = match action {
+                Action::None => "none".to_string(),
+                other => other.label(),
+            };
+            MenuItem::new(format!("{name} → {label}"), true, None)
+        })
+        .collect();
+    let mapping_ids: Vec<MenuId> = mapping_items.iter().map(|i| i.id().clone()).collect();
+    let mapping_refs: Vec<&dyn IsMenuItem> =
+        mapping_items.iter().map(|i| i as &dyn IsMenuItem).collect();
+    let mappings_submenu = Submenu::with_items("Mappings", true, &mapping_refs).ok()?;
+
+    let open = MenuItem::new("Open Agent Ring", true, None);
     let quit = MenuItem::new("Quit Agent Ring", true, None);
-    menu.append(&show).ok()?;
-    menu.append(&PredefinedMenuItem::separator()).ok()?;
-    menu.append(&quit).ok()?;
-    let show_id = show.id().clone();
+    let open_id = open.id().clone();
     let quit_id = quit.id().clone();
+
+    menu.append(&ring_connected).ok()?;
+    menu.append(&input_monitoring).ok()?;
+    menu.append(&accessibility).ok()?;
+    menu.append(&PredefinedMenuItem::separator()).ok()?;
+    menu.append(&remapping).ok()?;
+    menu.append(&PredefinedMenuItem::separator()).ok()?;
+    menu.append(&last_gesture).ok()?;
+    menu.append(&mappings_submenu).ok()?;
+    menu.append(&PredefinedMenuItem::separator()).ok()?;
+    menu.append(&open).ok()?;
+    menu.append(&quit).ok()?;
 
     let mut builder = TrayIconBuilder::new()
         .with_menu(Box::new(menu))
@@ -102,8 +152,19 @@ fn build_tray() -> Option<(TrayIcon, MenuId, MenuId)> {
     if let Some(icon) = load_tray_icon() {
         builder = builder.with_icon(icon);
     }
-    let tray = builder.build().ok()?;
-    Some((tray, show_id, quit_id))
+    let _icon = builder.build().ok()?;
+
+    Some(TrayMenu {
+        _icon,
+        ring_connected,
+        input_monitoring,
+        accessibility,
+        remapping,
+        last_gesture,
+        mapping_ids,
+        open_id,
+        quit_id,
+    })
 }
 
 /// Load the ring logo as a menu-bar-sized template icon (22×22 RGBA). The image
@@ -119,6 +180,37 @@ fn load_tray_icon() -> Option<tray_icon::Icon> {
     tray_icon::Icon::from_rgba(img.into_raw(), w, h).ok()
 }
 
+/// Sync the tray dropdown's checkmarks and last-gesture text from live state.
+/// Called every frame so the open dropdown always reflects the current truth.
+fn refresh_tray(tray: &TrayMenu, state: &SharedState) {
+    tray.ring_connected
+        .set_checked(state.ring_connected.load(Ordering::Relaxed));
+    tray.input_monitoring
+        .set_checked(state.input_monitoring_ok.load(Ordering::Relaxed));
+    tray.accessibility
+        .set_checked(state.accessibility_ok.load(Ordering::Relaxed));
+    tray.remapping.set_checked(state.is_enabled());
+
+    let count = state.fire_count.lock().map(|c| *c).unwrap_or(0);
+    let text = match state.last.lock() {
+        Ok(guard) => match guard.as_ref() {
+            Some((g, when, action)) => {
+                let ago = when.elapsed().as_secs();
+                format!(
+                    "Last: {} → {} ({}s ago) · {} total",
+                    g.as_str(),
+                    action,
+                    ago,
+                    count
+                )
+            }
+            None => format!("No gestures yet · {count} total"),
+        },
+        Err(_) => format!("No gestures yet · {count} total"),
+    };
+    tray.last_gesture.set_text(text);
+}
+
 struct RingApp {
     state: SharedState,
     mappings: std::collections::HashMap<String, crate::actions::Action>,
@@ -129,10 +221,8 @@ struct RingApp {
     combo_inputs: std::collections::HashMap<String, String>,
     /// Parse error per gesture name, shown inline; absent when valid.
     combo_errors: std::collections::HashMap<String, String>,
-    /// Menu-bar tray icon; kept alive for the process lifetime (drop removes it).
-    _tray: Option<TrayIcon>,
-    tray_show_id: Option<MenuId>,
-    tray_quit_id: Option<MenuId>,
+    /// Menu-bar tray dropdown; kept alive for the process lifetime (drop removes it).
+    tray: Option<TrayMenu>,
 }
 
 /// Render an action as an editable combo string ("" for none).
@@ -181,12 +271,41 @@ impl RingApp {
 
 impl eframe::App for RingApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
-        // Menu-bar tray: handle Open / Quit clicks.
+        // Menu-bar tray: handle dropdown clicks.
         while let Ok(ev) = MenuEvent::receiver().try_recv() {
-            if Some(&ev.id) == self.tray_show_id.as_ref() {
+            let Some(tray) = self.tray.as_ref() else {
+                continue;
+            };
+            let id = &ev.id;
+            if id == tray.ring_connected.id() {
+                #[cfg(target_os = "macos")]
+                {
+                    let present = crate::hid::macos::ring_present();
+                    self.state.ring_connected.store(present, Ordering::Relaxed);
+                }
+            } else if id == tray.input_monitoring.id() {
+                #[cfg(target_os = "macos")]
+                {
+                    if !crate::permissions::input_monitoring_granted() {
+                        crate::permissions::request_input_monitoring();
+                    }
+                }
+            } else if id == tray.accessibility.id() {
+                #[cfg(target_os = "macos")]
+                {
+                    if !crate::permissions::accessibility_granted() {
+                        crate::permissions::request_accessibility();
+                    }
+                }
+            } else if id == tray.remapping.id() {
+                // CheckMenuItem auto-toggled visually; flip the real state and
+                // let refresh_tray sync the checkmark next frame.
+                let current = self.state.is_enabled();
+                self.state.enabled.store(!current, Ordering::Relaxed);
+            } else if id == &tray.open_id || tray.mapping_ids.contains(id) {
                 ctx.send_viewport_cmd(eframe::egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(eframe::egui::ViewportCommand::Focus);
-            } else if Some(&ev.id) == self.tray_quit_id.as_ref() {
+            } else if id == &tray.quit_id {
                 std::process::exit(0);
             }
         }
@@ -200,13 +319,24 @@ impl eframe::App for RingApp {
         // refresh live permission status each frame
         #[cfg(target_os = "macos")]
         {
-            self.state.accessibility_ok.store(crate::permissions::accessibility_granted(), Ordering::Relaxed);
-            self.state.input_monitoring_ok.store(crate::permissions::input_monitoring_granted(), Ordering::Relaxed);
+            self.state.accessibility_ok.store(
+                crate::permissions::accessibility_granted(),
+                Ordering::Relaxed,
+            );
+            self.state.input_monitoring_ok.store(
+                crate::permissions::input_monitoring_granted(),
+                Ordering::Relaxed,
+            );
             // NOTE: no background HID polling here. Re-scanning by opening an
             // IOHIDManager on a timer churned the input system and made global
             // hotkeys (e.g. CleanShot) unresponsive. Presence updates come from
             // the startup seed, the value-callback liveness flip, and the manual
             // Refresh button only.
+        }
+
+        // Sync the tray dropdown's checkmarks and last-gesture text each frame.
+        if let Some(tray) = &self.tray {
+            refresh_tray(tray, &self.state);
         }
 
         // drain gestures, fire mapped actions, record for the monitor
@@ -346,7 +476,11 @@ impl eframe::App for RingApp {
 fn status_row(ui: &mut eframe::egui::Ui, label: &str, ok: bool, hint: &str) {
     use eframe::egui::{Color32, RichText};
     ui.horizontal(|ui| {
-        let (dot, col) = if ok { ("●", Color32::LIGHT_GREEN) } else { ("●", Color32::from_rgb(220, 90, 90)) };
+        let (dot, col) = if ok {
+            ("●", Color32::LIGHT_GREEN)
+        } else {
+            ("●", Color32::from_rgb(220, 90, 90))
+        };
         ui.label(RichText::new(dot).color(col).size(16.0));
         ui.label(RichText::new(label).strong());
         if !ok {

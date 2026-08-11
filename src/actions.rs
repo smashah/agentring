@@ -77,24 +77,79 @@ pub fn macos_keycode_for_name(name: &str) -> Option<u16> {
     let n = name.trim().to_ascii_lowercase();
     let code = match n.as_str() {
         // letters
-        "a" => 0, "b" => 11, "c" => 8, "d" => 2, "e" => 14, "f" => 3, "g" => 5,
-        "h" => 4, "i" => 34, "j" => 38, "k" => 40, "l" => 37, "m" => 46, "n" => 45,
-        "o" => 31, "p" => 35, "q" => 12, "r" => 15, "s" => 1, "t" => 17, "u" => 32,
-        "v" => 9, "w" => 13, "x" => 7, "y" => 16, "z" => 6,
+        "a" => 0,
+        "b" => 11,
+        "c" => 8,
+        "d" => 2,
+        "e" => 14,
+        "f" => 3,
+        "g" => 5,
+        "h" => 4,
+        "i" => 34,
+        "j" => 38,
+        "k" => 40,
+        "l" => 37,
+        "m" => 46,
+        "n" => 45,
+        "o" => 31,
+        "p" => 35,
+        "q" => 12,
+        "r" => 15,
+        "s" => 1,
+        "t" => 17,
+        "u" => 32,
+        "v" => 9,
+        "w" => 13,
+        "x" => 7,
+        "y" => 16,
+        "z" => 6,
         // digits (top row)
-        "0" => 29, "1" => 18, "2" => 19, "3" => 20, "4" => 21, "5" => 23,
-        "6" => 22, "7" => 26, "8" => 28, "9" => 25,
+        "0" => 29,
+        "1" => 18,
+        "2" => 19,
+        "3" => 20,
+        "4" => 21,
+        "5" => 23,
+        "6" => 22,
+        "7" => 26,
+        "8" => 28,
+        "9" => 25,
         // named
-        "space" => 49, "enter" | "return" => 36, "tab" => 48,
-        "escape" | "esc" => 53, "delete" | "backspace" => 51,
+        "space" => 49,
+        "enter" | "return" => 36,
+        "tab" => 48,
+        "escape" | "esc" => 53,
+        "delete" | "backspace" => 51,
         // arrows
-        "up" => 126, "down" => 125, "left" => 123, "right" => 124,
+        "up" => 126,
+        "down" => 125,
+        "left" => 123,
+        "right" => 124,
         // function keys
-        "f1" => 122, "f2" => 120, "f3" => 99, "f4" => 118, "f5" => 96, "f6" => 97,
-        "f7" => 98, "f8" => 100, "f9" => 101, "f10" => 109, "f11" => 103, "f12" => 111,
+        "f1" => 122,
+        "f2" => 120,
+        "f3" => 99,
+        "f4" => 118,
+        "f5" => 96,
+        "f6" => 97,
+        "f7" => 98,
+        "f8" => 100,
+        "f9" => 101,
+        "f10" => 109,
+        "f11" => 103,
+        "f12" => 111,
         // symbols
-        "-" | "minus" => 27, "=" | "equal" => 24, "[" => 33, "]" => 30, ";" => 41,
-        "'" => 39, "," => 43, "." => 47, "/" | "slash" => 44, "\\" => 42, "`" => 50,
+        "-" | "minus" => 27,
+        "=" | "equal" => 24,
+        "[" => 33,
+        "]" => 30,
+        ";" => 41,
+        "'" => 39,
+        "," => 43,
+        "." => 47,
+        "/" | "slash" => 44,
+        "\\" => 42,
+        "`" => 50,
         _ => return None,
     };
     Some(code)
@@ -103,12 +158,41 @@ pub fn macos_keycode_for_name(name: &str) -> Option<u16> {
 /// Reverse of [`macos_keycode_for_name`] for a handful of codes, used by labels.
 fn name_for_macos_keycode(code: u16) -> Option<&'static str> {
     Some(match code {
-        49 => "space", 36 => "enter", 48 => "tab", 53 => "esc", 51 => "delete",
-        126 => "up", 125 => "down", 123 => "left", 124 => "right",
-        0 => "a", 11 => "b", 8 => "c", 2 => "d", 14 => "e", 3 => "f", 5 => "g",
-        4 => "h", 34 => "i", 38 => "j", 40 => "k", 37 => "l", 46 => "m", 45 => "n",
-        31 => "o", 35 => "p", 12 => "q", 15 => "r", 1 => "s", 17 => "t", 32 => "u",
-        9 => "v", 13 => "w", 7 => "x", 16 => "y", 6 => "z",
+        49 => "space",
+        36 => "enter",
+        48 => "tab",
+        53 => "esc",
+        51 => "delete",
+        126 => "up",
+        125 => "down",
+        123 => "left",
+        124 => "right",
+        0 => "a",
+        11 => "b",
+        8 => "c",
+        2 => "d",
+        14 => "e",
+        3 => "f",
+        5 => "g",
+        4 => "h",
+        34 => "i",
+        38 => "j",
+        40 => "k",
+        37 => "l",
+        46 => "m",
+        45 => "n",
+        31 => "o",
+        35 => "p",
+        12 => "q",
+        15 => "r",
+        1 => "s",
+        17 => "t",
+        32 => "u",
+        9 => "v",
+        13 => "w",
+        7 => "x",
+        16 => "y",
+        6 => "z",
         _ => return None,
     })
 }
@@ -125,7 +209,11 @@ pub fn parse_combo(input: &str) -> Result<Action, String> {
     if s.is_empty() || s.eq_ignore_ascii_case("none") {
         return Ok(Action::None);
     }
-    let parts: Vec<&str> = s.split('+').map(|p| p.trim()).filter(|p| !p.is_empty()).collect();
+    let parts: Vec<&str> = s
+        .split('+')
+        .map(|p| p.trim())
+        .filter(|p| !p.is_empty())
+        .collect();
     if parts.is_empty() {
         return Ok(Action::None);
     }

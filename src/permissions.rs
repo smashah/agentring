@@ -5,15 +5,17 @@
 //! APIs so the app populates the list on first click.
 #![cfg(target_os = "macos")]
 use core_foundation::base::TCFType;
-use core_foundation::dictionary::CFDictionary;
 use core_foundation::boolean::CFBoolean;
+use core_foundation::dictionary::CFDictionary;
 use core_foundation::string::CFString;
 use std::os::raw::c_int;
 
 #[link(name = "ApplicationServices", kind = "framework")]
 extern "C" {
     fn AXIsProcessTrusted() -> bool;
-    fn AXIsProcessTrustedWithOptions(options: core_foundation_sys::dictionary::CFDictionaryRef) -> bool;
+    fn AXIsProcessTrustedWithOptions(
+        options: core_foundation_sys::dictionary::CFDictionaryRef,
+    ) -> bool;
     static kAXTrustedCheckOptionPrompt: core_foundation_sys::string::CFStringRef;
 }
 
