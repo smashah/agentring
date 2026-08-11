@@ -4,7 +4,7 @@
 
 **Evidence tiers used in this document:**
 
-- **Primary-verified** (live URL checked today): Amazon UK rate card [12], Amazon US rate card [1], Amazon US cookie policy, Alibaba wholesale listing, Amazon product listings, GOV.UK VAT thresholds [13]. These claims are load-bearing.
+- **Primary-verified** (live URL checked today): Amazon UK rate card [12], Amazon US rate card [1], Amazon attribution policy [2], Amazon OneLink and application-review guidance [14][15][16][17], the AliExpress agreement [7], Alibaba wholesale and affiliate-program pages [5][18][19][20], eBay Partner Network terms [21][22][23], Amazon product listings, and GOV.UK VAT thresholds [13]. These claims are load-bearing.
 - **Third-party-sourced** (affiliate review sites, verified March 2026): AliExpress commission rates, cookie duration, review timing. These are **scenarios, not confirmed economics** — the exact rate is behind the AliExpress portal login and will not be verifiable until Mohammed enrols and sees the dashboard. Nothing in the recommendation depends on the third-party figures being exact.
 - **Assumptions** (flagged inline, not from any source): air freight cost, customs duty, realistic referral volumes. These are clearly labelled and are NOT used as the basis for any recommendation.
 
@@ -12,20 +12,27 @@
 
 ## RECOMMENDATION (read this first)
 
-**Enrol Amazon Associates UK now.** It is the **preferred primary** zero-inventory model — not the only one (AliExpress Affiliate below is the same zero-cost model with different geographic fit). A UK Associate tag earns on purchases a buyer makes on **Amazon.co.uk** after clicking from the README or first-run onboarding; **US buyers require a separate Amazon US enrollment and tag** — a UK tag does not earn on Amazon.com purchases. The commission rate is **3%**, the UK "All Other Categories" rate on the public UK rate card [12]. The WX02 ring does not map to a named UK category, so it is **modelled as UK "All Other Categories" pending category confirmation** after enrollment. At 3% on a ~$15–19 ring, the per-unit commission is small (~$0.45–0.57), but the effort is one enrollment and one tagged link.
+**Finish the already-started Amazon Associates UK signup, then use the UK as the first live tag.** It is the **preferred primary** zero-inventory model — not the only one (AliExpress Affiliate below is the same zero-cost model with different geographic fit). A UK Associate tag earns on purchases a buyer makes on **Amazon.co.uk** after clicking from an approved property; **US buyers require a separate Amazon US enrollment and tag** — a UK tag does not earn on Amazon.com purchases. The commission rate is **3%**, the UK "All Other Categories" rate on the public UK rate card [12]. The WX02 ring does not map to a named UK category, so it is **modelled as UK "All Other Categories" pending category confirmation** after enrollment. At 3% on a ~$15–19 ring, the per-unit commission is small (~$0.45–0.57), but the effort is one enrollment and one tagged link.
 
-**Add AliExpress Affiliate as a second tag** for EU/global buyers where AliExpress is the preferred or cheaper marketplace. Same zero-cost model. Commission rates are **third-party-sourced and unverified** — review sites report 3% on electronics and up to 9% on accessories [3][4], but the exact rate is behind the portal login and should be confirmed after enrollment. The reported 3-day cookie [3] is longer than Amazon's 24-hour session [2], which is an advantage if it holds. This model captures buyers who would never use Amazon regardless of exact rates.
+**Do not enrol every Amazon locale now.** OneLink is geo-redirection across a defined set of stores, not a worldwide tag [14]. Add the US only when Agent Ring has a verified US SKU and audience. From the US OneLink dashboard, Canada and EU5 can use the simplified single-store-ID controls described by Amazon [15], but the UK documentation still says country accounts must be created separately [16]. Treat that as a documentation mismatch: enable or link Canada, Germany, France, Italy, and Spain only through controls proven in the live dashboard. Japan, Singapore, Netherlands, Saudi Arabia, Poland, Sweden, and Australia explicitly require separate local accounts before their Store IDs can be linked [15].
+
+**Add AliExpress Affiliate after `agentr.ing` is live** for buyers where AliExpress is the preferred or cheaper marketplace. Same zero-cost model. The official agreement confirms that the live portal controls target countries and per-sale pricing [7]; it does not publish a primary-source cookie or WX02 commission. Review sites report 3% on electronics, up to 9% on accessories, and a 3-day cookie [3][4], but every one of those figures remains an **unverified scenario** until Mohammed sees the exact campaign in the portal.
+
+**Add Alibaba.com Affiliate as the global wholesale CTA after the site is live.** One membership exposes affiliate products across 200+ supported countries [18], and the exact WX02 wholesale listing already exists [5]. Current primary rules publish a 60-day cookie and tiered new-buyer/existing-buyer commissions [20]. This is the best global affiliate option for teams, bulk orders, and future branding; it is separate from buying inventory and reselling it ourselves.
+
+**Use eBay only as a conditional local fallback.** EPN has 14 participating affiliate sites [21], but no live listing has been physically verified as WX02 hardware. Add an eBay destination only when a compatible listing exists in a target country; do not model a numeric rate until that listing's category and regional rate card are known [23].
 
 **Do NOT pursue Alibaba bulk resale now.** The unit economics are excellent on paper ($2.91/unit at 100 pcs vs $15–19 retail), but resale requires inventory, shipping, returns handling, customer support, product-liability cover, a storefront, and UK VAT registration once turnover exceeds £90,000 [13]. This is a business, not a link. Capture it as the Phase 2 path to Mohammed's ~$70 own-brand ring, not as the gate-opener.
 
 **Sequenced path:**
-1. Enrol Amazon Associates UK (Mohammed's action, low effort)
-2. Identify 1–2 SKU candidates and generate tagged links
-3. Ship tagged links in README + first-run onboarding
-4. Confirm all four MONETIZATION checklist gates (see "Sequence that gates public release" below)
-5. Flip repo public
-6. *(Later)* Add AliExpress affiliate tag for geographic coverage
-7. *(Much later)* Evaluate bulk-resale / own-brand ring when there is real demand
+1. Complete the Amazon UK CAPTCHA and receive the first live tag
+2. Publish real Agent Ring content at `agentr.ing` before Amazon reviews the submitted properties
+3. Identify and physically verify 1–2 UK SKU candidates; then generate direct tagged Amazon links
+4. Enrol Alibaba.com Affiliate for the exact WX02 wholesale listing and AliExpress after its portal exposes the real campaign economics
+5. Ship the one-page regional product router and tagged links in README + first-run onboarding
+6. Confirm all four MONETIZATION checklist gates (see "Sequence that gates public release" below), then flip the repo public
+7. Add US/OneLink locales only as verified SKU inventory and traffic justify them
+8. *(Much later)* Evaluate bulk-resale / own-brand ring when there is real demand
 
 ---
 
@@ -82,9 +89,19 @@ Confirmed: United Kingdom is listed in Schedule 1 of the UK Associates Operating
 
 The program is also available across EU markets (amazon.de, amazon.fr, amazon.it, amazon.es, amazon.nl, amazon.se, amazon.pl, amazon.com.be, amazon.ie) under the same Amazon Europe entity [6]. **However, a single UK enrollment does NOT automatically cover EU storefronts.** Locale-specific programs and store tags require separate confirmation or enrollment — Mohammed should verify which storefronts his UK Associate tag works with before relying on EU commission.
 
+### Worldwide Amazon coverage: OneLink is not a worldwide tag
+
+Amazon's current OneLink-supported stores are the United States, United Kingdom, Canada, Italy, France, Spain, Germany, Japan, Singapore, Netherlands, Saudi Arabia, Poland, Sweden, and Australia [14]. OneLink attempts an exact product match first and may use a close match or search when an identical product is unavailable. Each destination locale applies its own commission rate, accrues earnings in its own programme, and has its own payout threshold [14]. The UK 3% model in this document must not be extrapolated to another storefront.
+
+The current US OneLink guide describes simplified activation for Canada and EU5 (UK, Spain, Germany, France, and Italy) from a US store ID [15]. The UK guide still instructs Associates to create accounts for the countries they want to monetise, including the US and EU5 [16]. This mismatch matters: from the UK home account, do not promise automatic Canada/EU5 provisioning until the live OneLink dashboard exposes and successfully links those controls.
+
+Amazon explicitly requires separate local Associate accounts for Japan, Singapore, Netherlands, Saudi Arabia, Poland, Sweden, and Australia before their Store IDs can be linked and assigned a default tracking ID [15]. Australia is the first later separate-account priority, followed by Japan and Singapore. Netherlands, Sweden, Poland, and Saudi Arabia wait for verified local inventory and traffic. India, UAE, Brazil, Mexico, Belgium, Ireland, Turkey, and Egypt appear as direct Associates programmes but are not on the current OneLink-supported list [14]; they require direct local-program links if demand ever justifies them.
+
+Do not create all of these accounts speculatively. Every separate account carries local tax/payment setup, payout thresholds, and an independent application-review clock. Amazon reviews submitted properties after three qualifying sales within 180 days and expects each property to be public, original, and active; its rule of thumb is about ten posts, generally with recent content, while accepted social pages normally need an established organic following [17].
+
 ### Enrollment URL
 
-**https://affiliate-program.amazon.co.uk** — sign in with an Amazon account, provide the site URL (agentr.ing or the GitHub repo), and accept the operating agreement.
+**https://affiliate-program.amazon.co.uk** — the application was started with `petrol.now`, `openwa.dev`, and `agentr.ing`. Amazon presented a CAPTCHA after Finish; no Associate tag exists until that human challenge completes and the confirmation surface is shown. Amazon reviews every submitted Site for public, original, active content, and tagged links must appear only on declared Sites [17]. After account creation, keep `agentr.ing` as the primary promotional property once it is live; remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring affiliate links genuinely appear there. Do not force unrelated cross-site content.
 
 ### Effort
 
@@ -137,11 +154,11 @@ A separate "Hot Products" tier can offer rates up to 90%, capped at $50 commissi
 
 ### UK / EU eligibility
 
-The AliExpress Affiliate Program is **reported** to be open globally (190+ countries) [3] — third-party-sourced. The agreement is between the participant and Alibaba.com Singapore E-Commerce Private Limited (AliExpress Global) [7]. There is no UK/EU residency restriction. A UK entity or individual can enrol.
+The agreement is between the participant and Alibaba.com Singapore E-Commerce Private Limited (AliExpress Global) [7]. It requires the applicant to control the submitted website, app, or social-media property; AliExpress may reject an application. A UK entity or individual can apply, but the live portal determines target countries and campaign availability rather than a public country matrix [7].
 
 ### Enrollment URL
 
-**https://portals.aliexpress.com** — sign in with an AliExpress account (or create one), choose promotion type (website/social/app), submit for manual review. Approval is **reported** to take 2–5 business days [3] (third-party-sourced, unverified until portal enrollment).
+**https://portals.aliexpress.com** — accept the Alibaba.com Free Membership Agreement and portal advertising rules, complete account registration, and submit the applicant's name, country, controlled site/media, and contact details [7]. Apply after `agentr.ing` serves real Agent Ring content. `petrol.now` and `openwa.dev` qualify only if they genuinely publish Agent Ring promotion; they must not be unrelated placeholders. Approval timing remains **third-party-reported and unverified** until the portal shows the application state.
 
 ### Effort
 
@@ -201,7 +218,7 @@ The resale price benchmark is the current Amazon retail price for equivalent Blu
 - Air freight China→UK: ~$1.50/unit (based on 0.1 kg/package, small-parcel air rates)
 - UK import VAT: 20% on (goods + shipping value) — the 20% standard rate is well-established, but the exact application depends on the consignment value threshold (£135) and the seller's setup
 - UK customs duty: assumed 0% (consumer electronics/accessories often fall under 0% duty, but this needs verification against the actual HS code for a Bluetooth remote — likely HS 8543.70 — at www.gov.uk/trade-tariff)
-- Payment processing (Stripe/PayPal): ~3% + $0.30 per transaction
+- Payment processing: assume ~3% + $0.30 per transaction pending a provider choice
 - These assumptions should be verified before committing capital
 
 | Tier | Unit cost | Est. landed cost/unit | Resale @ $15 | Gross margin/unit | Gross margin % |
@@ -257,6 +274,33 @@ This model IS the bridge to the preorder line from `docs/MONETIZATION.md`. The s
 
 ---
 
+## Global affiliate extensions — same #66 decision
+
+These channels extend the three core business models; they do not create a fourth product strategy. Amazon and AliExpress remain zero-inventory retail referral paths, Alibaba.com Affiliate adds a zero-inventory wholesale referral path, and eBay is a conditional marketplace fallback.
+
+### Alibaba.com Affiliate — global wholesale CTA
+
+Alibaba.com Affiliate advertises CPS, CPI, and KOL campaigns, 200M+ affiliate products, and support across 200+ countries from one membership [18]. Registration supports companies and individuals: a company supplies its registered name, company ID, and tax ID; an individual supplies the name matching their ID. Both require email verification, a completed profile, and agreement approval. A supplier portal is needed for withdrawal, not for promotion [19].
+
+The commission rules effective 2026-07-01 publish these order-based rates [20]:
+
+| Buyer/order | Under $5,000 | $5,000–$10,000 | Over $10,000 |
+|---|---:|---:|---:|
+| **New buyer** | 8% | $300 | $400 |
+| **Existing buyer** | 3% | $100 | $200 |
+
+The current cookie is 60 days, and a qualifying order must reach `Trade Completed` [20]. Traffic and orders from Mainland China, India, Russia, Nigeria, Cuba, Iran, North Korea, Syria, and Ukraine are excluded [20]. These published economics apply to the Alibaba.com Affiliate programme, not to AliExpress and not to branded resale.
+
+Use this programme for the exact WX02 wholesale listing [5] and team, event, agency, or own-brand intent. It is not the primary single-ring retail CTA. Enrolment can begin with a real individual or company identity and controlled media, but `agentr.ing` should be live first so the reviewed property matches the promotion.
+
+### eBay Partner Network — conditional local fallback
+
+EPN supports 14 participating affiliate sites: Australia, Austria, Belgium, Canada, France, Germany, Ireland, Italy, Netherlands, Poland, Spain, Switzerland, United Kingdom, and United States [21]. eBay's wider marketplace reaches more countries, but that is not the same as affiliate-storefront coverage.
+
+Signup requires an eBay account, company information, payout currency, and the web, mobile, or social properties used for promotion [22]. Buy It Now attribution uses a 24-hour window, while commission depends on the destination region and product-category rate card [23]. No numeric WX02 rate is verified, so this plan does not model one. Add an eBay destination only after a live target-market listing has been physically verified as compatible WX02-class hardware.
+
+---
+
 ## Revenue comparison at realistic sales volumes
 
 **Assumption:** "Realistic sales volumes" for a free, open-source macOS/Windows utility app in its first year are modest. A reasonable range is 50–500 ring referrals/year, driven by GitHub stars, README links, and first-run onboarding.
@@ -295,69 +339,38 @@ The recommendation stands: start with affiliate (free, low-effort, one of four c
 
 ---
 
-## Short-link / redirect mechanism
+## One product page and regional link routing
 
-### Recommendation: single Cloudflare Worker redirect
+### Recommendation: direct destination URLs, not an Amazon redirect
 
-One short-link — **agentr.ing/ring** — backed by a Cloudflare Worker that:
+Use one Agent Ring product page with one visible primary **Buy** button and one optional **Bulk / branded** button. Keep the destination data in a server-side or deployment-time mapping keyed by product and country, with `program`, vendor URL or ASIN/listing ID, locale tag, `verifiedAt`, `enabled`, and `priority` fields. Resolve country from an explicit visitor override first and Cloudflare's `cf.country` second; the visitor should never have to navigate a visible country-by-country link matrix.
 
-1. Reads the visitor's `cf.country` header (Cloudflare provides this natively)
-2. Routes to the right store with the right affiliate tag:
-   - **GB** → Amazon.co.uk with tag `agentring-21`
-   - **US/CA** → Amazon.com with tag `agentring-20`
-   - **EU** → Amazon.de/fr/it/es or AliExpress (whichever has better conversion for that market)
-   - **Rest of world** → AliExpress (lower shipping barriers than Amazon for most countries)
-3. Injects the affiliate tag into the destination URL
-4. Redirects using **302 (Found) or 307 (Temporary Redirect)** — never 301 (Moved Permanently), because affiliate tags, SKUs, and destinations will change as programs enrol and products delist. A 301 caches in browsers and search engines, making target swaps slow and unreliable.
+For Amazon, render the final locale-specific Amazon affiliate URL directly into the Buy anchor before the click. Amazon says OneLink works with full Amazon links and Amazon short links, while third-party shortened URLs do not redirect through OneLink [14]. Do not send an Amazon click through `agentr.ing/ring`, another third-party shortener, or a redirect Worker. Use OneLink only inside its 14-store boundary, verify the destination with Amazon's Check Matching Products tool, and remember that a close match can be a similar product or a search rather than the exact ring [14].
 
-### Why this is better than raw tagged links
+AliExpress and eBay destinations should likewise use the portal-generated tagged URL after the exact listing and campaign are verified. The separate Bulk / branded button should point directly to the Alibaba.com tracked WX02 listing. If no verified local SKU and affiliate link exist, show an unmonetised search or notify-me state rather than sending a visitor to a wrong product or locale tag.
 
-- **One link everywhere.** README, onboarding, social media, docs — all point to `agentr.ing/ring`. Change the destination or tag in the Worker, not in every place a link appears.
-- **Geographic routing.** A UK buyer gets Amazon.co.uk (fast Prime shipping), a Brazilian buyer gets AliExpress (cheaper shipping than Amazon). Raw links can't do this.
-- **Future-proof.** When the branded ring launches, flip the Worker to point at the storefront. No app update needed.
-- **Analytics.** The Worker can log clicks before redirecting, giving basic conversion data without third-party trackers.
+Record click analytics separately with a beacon, then allow normal anchor navigation to the already-rendered vendor URL. This keeps measurement independent from destination routing and preserves the direct-link behaviour Amazon requires for OneLink. The app's onboarding should open the Agent Ring product page in the system browser; the page, not the compiled app, owns current regional link configuration.
 
-### Why it is more effort than raw links
+| Buyer country | Launch routing rule |
+|---|---|
+| United Kingdom | Direct Amazon.co.uk link with the UK tag and a physically verified UK SKU |
+| United States | Direct Amazon.com link only after a US account, tag, and verified US SKU exist |
+| Canada and EU5 | Enable only through OneLink controls proven in the live dashboard, then verify the exact destination |
+| JP, SG, NL, SA, PL, SE, AU | Direct local-program links only after separate enrollment, local stock, and traffic justify them |
+| Other retail markets | Verified AliExpress campaign when available; otherwise an unmonetised search or notify-me state |
+| Worldwide bulk intent | Direct Alibaba.com Affiliate URL for the exact WX02 wholesale listing |
 
-A Worker is ~30 lines of JavaScript and a `wrangler deploy` — low effort but more than pasting a raw link. If the priority is "gate the public release," raw tagged links ship first and the Worker replaces them later.
-
-### Disclosure
-
-Both Amazon Associates and AliExpress Affiliate require affiliate disclosure on any page containing tagged links. The README and the agentr.ing landing page should include: *"Agent Ring may earn a commission from purchases made through links on this page."* The Worker redirect page can include a brief disclosure before redirecting.
-
-### What the app itself opens
-
-The Rust app's first-run onboarding should open `agentr.ing/ring` in the system browser (not embed a link), so the Worker handles routing. This keeps the app binary free of affiliate tags — the tag lives in the Worker, not in the compiled code.
-
----
-
-## Geographic routing detail
-
-| Buyer country | Route to | Why |
-|---|---|---|
-| UK | Amazon.co.uk | Prime shipping, GBP pricing, UK consumer rights |
-| US/Canada | Amazon.com | Prime shipping, familiar marketplace |
-| EU (DE/FR/IT/ES/NL/SE/PL/BE/IE) | Amazon EU store or AliExpress | Amazon EU has local shipping; AliExpress is competitive on price |
-| Rest of world | AliExpress | Amazon shipping is expensive/slow outside UK/US/EU; AliExpress ships globally |
-
-The Cloudflare Worker's `cf.country` header makes this a simple switch statement, no IP geolocation service needed.
+Any page containing tagged links should carry a clear disclosure such as: *"Agent Ring may earn a commission from purchases made through links on this page."*
 
 ---
 
 ## The exact human enrollment action (Amazon Associates UK)
 
-This is one human account action; four product gates remain. Mohammed does this himself (not the agent — identity/account per M-001 §3):
+The application form has been completed and Finish was submitted. Amazon is currently showing a CAPTCHA, so Mohammed's exact remaining account action is to solve that challenge in the already-open Chrome tab. No Associate ID or review state exists until the confirmation page or account dashboard proves account creation.
 
-1. Go to **https://affiliate-program.amazon.co.uk**
-2. Sign in with the Amazon account that will receive commission
-3. Enter the site URL: `agentr.ing` (or the GitHub repo URL)
-4. Describe the site: "Free macOS/Windows app that remaps a Bluetooth ring into keyboard shortcuts. We recommend rings users can buy."
-5. Accept the Operating Agreement
-6. Receive the Associate ID (e.g., `agentring-21`)
-7. Generate a tagged link to a ring product (e.g., `https://www.amazon.co.uk/dp/ASIN?tag=agentring-21`)
-8. Place the tagged link in the README and first-run onboarding
+After the CAPTCHA, capture the issued Store ID/tag and the dashboard's application state. Keep `agentr.ing` as the primary declared promotional property once it is live. Remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear on them; Amazon's evidence-backed rule is that it reviews every submitted Site for public, original, active content and that tagged links appear only on declared Sites [17], not that every declared Site must specifically discuss Agent Ring.
 
-**Cost:** £0. **Result:** Mohammed has an Associate ID and can generate tagged links — but this is ONE of four checklist gates, not the only blocker on public release.
+Then generate a direct tagged link only for a physically verified UK ring SKU. Amazon reviews the application after three qualified sales within 180 days [17], so receiving a tag starts the review clock but does not complete the four product gates below.
 
 ---
 
@@ -390,7 +403,7 @@ These rings are **compatibility candidates** — they appear to be the same WX02
 
 ## What this plan does NOT do
 
-- Does not enrol in any program (that is Mohammed's action)
+- Does not claim Amazon UK enrollment is complete while the CAPTCHA remains and no tag exists
 - Does not flip the repo public (gated on enrollment + tagged links)
 - Does not modify the README or onboarding code (that is implementation, not research)
 - Does not order any inventory (Model 3 is deferred)
@@ -411,13 +424,23 @@ All URLs checked 2026-08-11.
 - **[4]** AliExpress Affiliate Program review (diggitymarketing.com): https://diggitymarketing.com/best-affiliate-programs/aliexpress/ — "Electronics: 3%, Accessories: 9%"
 - **[5]** Alibaba wholesale listing: https://www.alibaba.com/product-detail/Wholesale-Tiktok-Remote-BT-Ring-Remote_1601870411652.html — tiered pricing, specs, supplier details
 - **[6]** Amazon.co.uk Associates Program Policies: https://affiliate-program.amazon.co.uk/help/operating/policies — UK payout minimums (£25 deposit), Schedule 1 entity (Amazon Europe Core S.à r.l.)
-- **[7]** AliExpress Affiliate Program Service Agreement (effective April 1 2025): https://cdn.contract.alibaba.com/terms/b_platform_service_agreement/20250305142526766/20250305142526766.html — "$15 USD" minimum withdrawal, payment terms
+- **[7]** AliExpress Affiliate Program Service Agreement (effective April 1 2025): https://cdn.contract.alibaba.com/terms/b_platform_service_agreement/20250305142526766/20250305142526766.html — registration and controlled-media requirements, portal-defined campaign economics, "$15 USD" minimum withdrawal, and payment terms
 - **[8]** Amazon.com listing B0CLDVJPM8: https://www.amazon.com/SSOBZELR-Trending-Bluetooth-Scrolling-Wireless/dp/B0CLDVJPM8 — $14.99
 - **[9]** Amazon.com listing B0CZ487JJG: https://www.amazon.com/dp/B0CZ487JJG — $18.99
 - **[10]** Amazon.com listing B0FHW4HXYQ: https://www.amazon.com/Scrolling-Bluetooth-Android-Hands%E2%80%91Free-Rechargeable/dp/B0FHW4HXYQ — $14.99
 - **[11]** Amazon.co.uk listing B0D1Y4Y4RN: https://www.amazon.co.uk/Scrolling-Bluetooth-Control-Android-Scroller-Blue/dp/B0D1Y4Y4RN — TikTok Scrolling Ring (price not captured)
 - **[12]** Amazon Associates UK Standard Commission Income Statement: https://affiliate-program.amazon.co.uk/help/node/topic/GRXPHT8U84RAYDXZ — UK "All Other Categories: 3.00%" (primary UK rate card, the basis for the 3% model in this document)
 - **[13]** GOV.UK — How VAT works: VAT thresholds: https://www.gov.uk/how-vat-works/vat-thresholds — UK VAT registration threshold £90,000
+- **[14]** Amazon Associates UK — OneLink overview and supported stores: https://affiliate-program.amazon.co.uk/help/node/topic/G8JHEWQ9GTDUN7EH — supported-store boundary, matching behaviour, direct-link requirements, locale-specific earnings
+- **[15]** Amazon Associates US — OneLink setup guide: https://affiliate-program.amazon.com/help/node/topic/G2L3ZBRGXTS7EMEY — simplified Canada/EU5 controls and separate-account linkage for JP, SG, NL, SA, PL, SE, and AU
+- **[16]** Amazon Associates UK — OneLink country-account setup: https://affiliate-program.amazon.co.uk/help/node/topic/GKHRXG4YEJBTCAFC — UK guidance to create accounts for each monetised country
+- **[17]** Amazon Associates UK — application review process: https://affiliate-program.amazon.co.uk/help/node/topic/G8TW5AE9XL2VX9VM — three qualified sales in 180 days and submitted-site quality/activity guidance
+- **[18]** Alibaba.com Affiliate — programme overview: https://ads.alibaba.com/welcome.htm — CPS/CPI/KOL, 200M+ affiliate products, 200+ supported countries
+- **[19]** Alibaba.com Affiliate — registration guide: https://ads.alibaba.com/help/register.htm?id=1 — individual/company registration fields, verification, approval, and withdrawal setup
+- **[20]** Alibaba.com Affiliate — commission rules effective 2026-07-01: https://ads.alibaba.com/help/commission.htm?id=2 — new/existing-buyer tiers, 60-day cookie, order completion, and excluded traffic
+- **[21]** eBay Partner Network agreement and participating sites: https://partnernetwork.ebay.com/page/network-agreement — 14 affiliate storefronts
+- **[22]** eBay Partner Network — joining guide: https://partnernetwork.ebay.com/solutions/joining-the-ebay-partner-network — account, business, currency, and promotional-property requirements
+- **[23]** eBay Partner Network — rate card: https://partnernetwork.ebay.com/our-program/rate-card — regional/category commissions and 24-hour Buy It Now attribution
 
 ---
 
