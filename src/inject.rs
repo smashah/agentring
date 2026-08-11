@@ -23,28 +23,49 @@ impl Injector {
             .map_err(|e| format!("enigo init failed: {e}"))
     }
 
-    pub fn dispatch(&mut self, action: &Action) {
+    pub fn dispatch(&mut self, action: &Action) -> Result<(), String> {
         match action {
-            Action::None => {}
+            Action::None => Ok(()),
             Action::KeyCombo(kc) => {
                 #[cfg(target_os = "macos")]
                 {
-                    macos_post_combo(&kc.modifiers, &kc.key);
+                    macos_post_combo(&kc.modifiers, &kc.key)
                 }
                 #[cfg(not(target_os = "macos"))]
                 {
+                    let mut pressed = Vec::new();
+                    let mut first_error = None;
                     for m in &kc.modifiers {
-                        let _ = self.enigo.key(modifier_key(m), Direction::Press);
+                        match self.enigo.key(modifier_key(m), Direction::Press) {
+                            Ok(()) => pressed.push(m),
+                            Err(error) => {
+                                first_error = Some(error.to_string());
+                                break;
+                            }
+                        }
                     }
-                    let _ = self.enigo.key(main_key(&kc.key), Direction::Click);
-                    for m in kc.modifiers.iter().rev() {
-                        let _ = self.enigo.key(modifier_key(m), Direction::Release);
+                    if first_error.is_none() {
+                        if let Err(error) = self.enigo.key(main_key(&kc.key), Direction::Click) {
+                            first_error = Some(error.to_string());
+                        }
+                    }
+                    for m in pressed.into_iter().rev() {
+                        if let Err(error) = self.enigo.key(modifier_key(m), Direction::Release) {
+                            if first_error.is_none() {
+                                first_error = Some(error.to_string());
+                            }
+                        }
+                    }
+                    match first_error {
+                        Some(error) => Err(error),
+                        None => Ok(()),
                     }
                 }
             }
-            Action::MediaKey(mk) => {
-                let _ = self.enigo.key(media_key(mk), Direction::Click);
-            }
+            Action::MediaKey(mk) => self
+                .enigo
+                .key(media_key(mk), Direction::Click)
+                .map_err(|e| e.to_string()),
         }
     }
 }
@@ -105,7 +126,7 @@ mod cg {
 /// Post a key combo as an explicit-flags CGEvent pair. The flags field carries
 /// exactly the requested modifiers; nothing is inferred from ambient state.
 #[cfg(target_os = "macos")]
-fn macos_post_combo(modifiers: &[Modifier], key: &Key) {
+fn macos_post_combo(modifiers: &[Modifier], key: &Key) -> Result<(), String> {
     use cg::*;
     let keycode = key.macos_keycode();
     let flags = macos_flags(modifiers);
@@ -114,21 +135,30 @@ fn macos_post_combo(modifiers: &[Modifier], key: &Key) {
         // A null source is still valid for CGEventCreateKeyboardEvent (it just
         // uses a private source), so we proceed either way.
         let down = CGEventCreateKeyboardEvent(source, keycode, true);
-        if !down.is_null() {
-            CGEventSetFlags(down, flags);
-            CGEventPost(HID_EVENT_TAP, down);
-            CFRelease(down);
-        }
         let up = CGEventCreateKeyboardEvent(source, keycode, false);
-        if !up.is_null() {
-            CGEventSetFlags(up, flags);
-            CGEventPost(HID_EVENT_TAP, up);
-            CFRelease(up);
+        if down.is_null() || up.is_null() {
+            if !down.is_null() {
+                CFRelease(down);
+            }
+            if !up.is_null() {
+                CFRelease(up);
+            }
+            if !source.is_null() {
+                CFRelease(source);
+            }
+            return Err("CoreGraphics could not create keyboard events".to_string());
         }
+        CGEventSetFlags(down, flags);
+        CGEventSetFlags(up, flags);
+        CGEventPost(HID_EVENT_TAP, down);
+        CGEventPost(HID_EVENT_TAP, up);
+        CFRelease(down);
+        CFRelease(up);
         if !source.is_null() {
             CFRelease(source);
         }
     }
+    Ok(())
 }
 
 #[cfg(not(target_os = "macos"))]

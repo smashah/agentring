@@ -12,11 +12,14 @@ use tray_icon::menu::{
 };
 use tray_icon::{TrayIcon, TrayIconBuilder};
 
+const GESTURE_QUEUE_CAPACITY: usize = 128;
+const MAX_GESTURES_PER_FRAME: usize = 32;
+
 pub fn run(config: Config) -> Result<(), String> {
     let state = SharedState::default();
 
     // HID reader thread -> gesture channel.
-    let (gtx, grx) = mpsc::channel();
+    let (gtx, grx) = mpsc::sync_channel(GESTURE_QUEUE_CAPACITY);
     {
         let st = state.clone();
         std::thread::spawn(move || {
@@ -27,7 +30,13 @@ pub fn run(config: Config) -> Result<(), String> {
         });
     }
 
-    let injector = Injector::new().ok();
+    let (injector, injector_error) = match Injector::new() {
+        Ok(injector) => (Some(injector), None),
+        Err(error) => {
+            state.enabled.store(false, Ordering::Relaxed);
+            (None, Some(error))
+        }
+    };
     let mappings = config.mappings.to_map();
 
     // Seed the editable combo fields from the current mappings, in stable order.
@@ -47,6 +56,7 @@ pub fn run(config: Config) -> Result<(), String> {
         state,
         mappings,
         injector,
+        injector_error,
         grx,
         config,
         combo_inputs,
@@ -89,7 +99,8 @@ struct TrayMenu {
     accessibility: CheckMenuItem,
     remapping: CheckMenuItem,
     last_gesture: MenuItem,
-    /// IDs of the Mappings submenu items — any click opens the settings window.
+    /// Handles and IDs stay paired in stable config order.
+    mapping_items: Vec<MenuItem>,
     mapping_ids: Vec<MenuId>,
     open_id: MenuId,
     quit_id: MenuId,
@@ -161,6 +172,7 @@ fn build_tray(config: &Config) -> Option<TrayMenu> {
         accessibility,
         remapping,
         last_gesture,
+        mapping_items,
         mapping_ids,
         open_id,
         quit_id,
@@ -215,6 +227,7 @@ struct RingApp {
     state: SharedState,
     mappings: std::collections::HashMap<String, crate::actions::Action>,
     injector: Option<Injector>,
+    injector_error: Option<String>,
     grx: mpsc::Receiver<crate::gestures::Gesture>,
     config: Config,
     /// Editable combo text per gesture name (e.g. "cmd+enter").
@@ -233,12 +246,24 @@ fn action_to_input(action: &crate::actions::Action) -> String {
     }
 }
 
-fn config_file_path() -> std::path::PathBuf {
+fn config_file_path() -> Result<std::path::PathBuf, String> {
     let dir = std::env::var("HOME")
         .map(|h| std::path::PathBuf::from(h).join(".config/agentring"))
         .unwrap_or_else(|_| std::path::PathBuf::from(".agentring"));
-    let _ = std::fs::create_dir_all(&dir);
-    dir.join("config.toml")
+    std::fs::create_dir_all(&dir)
+        .map_err(|e| format!("could not create config directory {}: {e}", dir.display()))?;
+    Ok(dir.join("config.toml"))
+}
+
+fn gesture_index(gesture: &str) -> Option<usize> {
+    match gesture {
+        "tap" => Some(0),
+        "swipe_up" => Some(1),
+        "swipe_down" => Some(2),
+        "swipe_left" => Some(3),
+        "swipe_right" => Some(4),
+        _ => None,
+    }
 }
 
 impl RingApp {
@@ -248,18 +273,43 @@ impl RingApp {
     fn apply_combo(&mut self, gesture: &str, text: &str) {
         match crate::actions::parse_combo(text) {
             Ok(action) => {
-                self.combo_errors.remove(gesture);
-                self.mappings.insert(gesture.to_string(), action.clone());
+                let mut next_config = self.config.clone();
                 match gesture {
-                    "tap" => self.config.mappings.tap = action,
-                    "swipe_up" => self.config.mappings.swipe_up = action,
-                    "swipe_down" => self.config.mappings.swipe_down = action,
-                    "swipe_left" => self.config.mappings.swipe_left = action,
-                    "swipe_right" => self.config.mappings.swipe_right = action,
-                    _ => {}
+                    "tap" => next_config.mappings.tap = action.clone(),
+                    "swipe_up" => next_config.mappings.swipe_up = action.clone(),
+                    "swipe_down" => next_config.mappings.swipe_down = action.clone(),
+                    "swipe_left" => next_config.mappings.swipe_left = action.clone(),
+                    "swipe_right" => next_config.mappings.swipe_right = action.clone(),
+                    _ => {
+                        self.combo_errors
+                            .insert(gesture.to_string(), "unknown gesture".to_string());
+                        return;
+                    }
                 }
-                if let Ok(toml) = self.config.to_toml() {
-                    let _ = std::fs::write(config_file_path(), toml);
+                let saved = next_config
+                    .to_toml()
+                    .map_err(|e| format!("could not serialize config: {e}"))
+                    .and_then(|toml| {
+                        let path = config_file_path()?;
+                        std::fs::write(&path, toml)
+                            .map_err(|e| format!("could not save {}: {e}", path.display()))
+                    });
+                if let Err(error) = saved {
+                    self.combo_errors.insert(gesture.to_string(), error);
+                    return;
+                }
+
+                self.config = next_config;
+                self.mappings.insert(gesture.to_string(), action.clone());
+                self.combo_errors.remove(gesture);
+                if let (Some(tray), Some(index)) = (&self.tray, gesture_index(gesture)) {
+                    if let Some(item) = tray.mapping_items.get(index) {
+                        let label = match &action {
+                            Action::None => "none".to_string(),
+                            other => other.label(),
+                        };
+                        item.set_text(format!("{gesture} → {label}"));
+                    }
                 }
             }
             Err(e) => {
@@ -339,21 +389,33 @@ impl eframe::App for RingApp {
             refresh_tray(tray, &self.state);
         }
 
-        // drain gestures, fire mapped actions, record for the monitor
-        while let Ok(g) = self.grx.try_recv() {
+        // Process a bounded batch so a noisy device cannot starve the UI.
+        for _ in 0..MAX_GESTURES_PER_FRAME {
+            let Ok(g) = self.grx.try_recv() else {
+                break;
+            };
             let label = self
                 .mappings
                 .get(g.as_str())
                 .map(|a| a.label())
                 .unwrap_or_else(|| "(unmapped)".into());
-            if self.state.is_enabled() {
-                if let (Some(inj), Some(action)) =
-                    (self.injector.as_mut(), self.mappings.get(g.as_str()))
-                {
-                    inj.dispatch(action);
+            let outcome = if !self.state.is_enabled() {
+                format!("remapping disabled · {label}")
+            } else if let Some(action) = self.mappings.get(g.as_str()) {
+                match self.injector.as_mut() {
+                    Some(injector) => match injector.dispatch(action) {
+                        Ok(()) => label,
+                        Err(error) => format!("injection failed: {error}"),
+                    },
+                    None => format!(
+                        "injection unavailable: {}",
+                        self.injector_error.as_deref().unwrap_or("unknown error")
+                    ),
                 }
-            }
-            self.state.record(g, label);
+            } else {
+                label
+            };
+            self.state.record(g, outcome);
         }
         ctx.request_repaint_after(std::time::Duration::from_millis(60));
 
@@ -405,6 +467,14 @@ impl eframe::App for RingApp {
                             }
                         });
                     });
+            }
+
+            if let Some(error) = &self.injector_error {
+                ui.add_space(8.0);
+                ui.colored_label(
+                    Color32::from_rgb(220, 120, 90),
+                    format!("Remapping unavailable: {error}"),
+                );
             }
 
             ui.add_space(10.0);

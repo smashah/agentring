@@ -2,37 +2,46 @@
 use agentring::config::Config;
 use std::path::PathBuf;
 
-fn config_path() -> PathBuf {
+fn config_path() -> Result<PathBuf, String> {
     let dir = std::env::var("HOME")
         .map(|h| PathBuf::from(h).join(".config/agentring"))
         .unwrap_or_else(|_| PathBuf::from(".agentring"));
-    let _ = std::fs::create_dir_all(&dir);
-    dir.join("config.toml")
+    std::fs::create_dir_all(&dir)
+        .map_err(|e| format!("could not create config directory {}: {e}", dir.display()))?;
+    Ok(dir.join("config.toml"))
 }
 
-fn main() {
-    let path = config_path();
-    let config = Config::load_or_default(&path).unwrap_or_else(|e| {
-        eprintln!("agentring: config load failed ({e}), using defaults");
-        Config::default_for_wx02()
-    });
+fn run() -> Result<(), String> {
+    let path = config_path()?;
+    let existed = path
+        .try_exists()
+        .map_err(|e| format!("could not inspect config {}: {e}", path.display()))?;
+    let config = Config::load_or_default(&path)
+        .map_err(|e| format!("could not load config {}: {e}", path.display()))?;
     // Persist defaults on first run so the user has a file to edit.
-    if !path.exists() {
-        if let Ok(toml) = config.to_toml() {
-            let _ = std::fs::write(&path, toml);
-        }
+    if !existed {
+        let toml = config
+            .to_toml()
+            .map_err(|e| format!("could not serialize default config: {e}"))?;
+        std::fs::write(&path, toml)
+            .map_err(|e| format!("could not write config {}: {e}", path.display()))?;
     }
 
     #[cfg(target_os = "macos")]
     {
-        if let Err(e) = agentring::app::run(config) {
-            eprintln!("agentring: {e}");
-            std::process::exit(1);
-        }
+        agentring::app::run(config)?;
     }
     #[cfg(not(target_os = "macos"))]
     {
         let _ = config;
         eprintln!("agentring: only macOS is wired in this build (M1); Windows is M3.");
+    }
+    Ok(())
+}
+
+fn main() {
+    if let Err(e) = run() {
+        eprintln!("agentring: {e}");
+        std::process::exit(1);
     }
 }

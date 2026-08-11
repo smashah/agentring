@@ -14,4 +14,5 @@ pub mod permissions;
 #[cfg(target_os = "macos")]
 pub mod app;
 pub mod hid;
+#[cfg(target_os = "macos")]
 pub mod inject;
