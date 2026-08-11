@@ -19,7 +19,7 @@ elif [[ $# -gt 0 ]]; then
   exit 64
 fi
 
-for tool in cargo codesign ditto plutil security shasum; do
+for tool in cargo codesign ditto plutil security shasum spctl xcrun; do
   if ! command -v "${tool}" >/dev/null 2>&1; then
     echo "missing required tool: ${tool}" >&2
     exit 69
@@ -27,7 +27,9 @@ for tool in cargo codesign ditto plutil security shasum; do
 done
 
 VERSION="$(plutil -extract CFBundleShortVersionString raw "${INFO_PLIST}")"
-OUTPUT_DIR="$(mktemp -d "${REPO_ROOT}/dist/agentring-public-${VERSION}.XXXXXX")"
+DIST_DIR="${REPO_ROOT}/dist"
+mkdir -p "${DIST_DIR}"
+OUTPUT_DIR="$(mktemp -d "${DIST_DIR}/agentring-public-${VERSION}.XXXXXX")"
 BUNDLE_DIR="${OUTPUT_DIR}/${APP_NAME}.app"
 CONTENTS_DIR="${BUNDLE_DIR}/Contents"
 ARCHIVE_NAME="Agent-Ring-${VERSION}-macOS.zip"
@@ -109,7 +111,10 @@ spctl --assess --type execute --verbose=4 "${BUNDLE_DIR}"
 
 echo "==> creating final public archive"
 ditto -c -k --keepParent "${BUNDLE_DIR}" "${ARCHIVE_PATH}"
-shasum -a 256 "${ARCHIVE_PATH}" >"${ARCHIVE_PATH}.sha256"
+(
+  cd "${OUTPUT_DIR}"
+  shasum -a 256 "${ARCHIVE_NAME}" >"${ARCHIVE_NAME}.sha256"
+)
 
 echo "==> public artifact ready"
 echo "${ARCHIVE_PATH}"
