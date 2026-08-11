@@ -61,6 +61,7 @@ pub fn run(config: Config) -> Result<(), String> {
         config,
         combo_inputs,
         combo_errors: std::collections::HashMap::new(),
+        last_permission_refresh: std::time::Instant::now() - std::time::Duration::from_secs(1),
         tray: None,
     };
 
@@ -234,6 +235,7 @@ struct RingApp {
     combo_inputs: std::collections::HashMap<String, String>,
     /// Parse error per gesture name, shown inline; absent when valid.
     combo_errors: std::collections::HashMap<String, String>,
+    last_permission_refresh: std::time::Instant,
     /// Menu-bar tray dropdown; kept alive for the process lifetime (drop removes it).
     tray: Option<TrayMenu>,
 }
@@ -366,9 +368,10 @@ impl eframe::App for RingApp {
             ctx.send_viewport_cmd(eframe::egui::ViewportCommand::Visible(false));
         }
 
-        // refresh live permission status each frame
+        // TCC checks cross a process boundary and generate system log traffic,
+        // so refresh status once per second rather than every 60 ms frame.
         #[cfg(target_os = "macos")]
-        {
+        if self.last_permission_refresh.elapsed() >= std::time::Duration::from_secs(1) {
             self.state.accessibility_ok.store(
                 crate::permissions::accessibility_granted(),
                 Ordering::Relaxed,
@@ -382,6 +385,7 @@ impl eframe::App for RingApp {
             // hotkeys (e.g. CleanShot) unresponsive. Presence updates come from
             // the startup seed, the value-callback liveness flip, and the manual
             // Refresh button only.
+            self.last_permission_refresh = std::time::Instant::now();
         }
 
         // Sync the tray dropdown's checkmarks and last-gesture text each frame.
