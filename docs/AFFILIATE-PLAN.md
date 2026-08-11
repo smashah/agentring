@@ -276,8 +276,8 @@ This model IS the bridge to the preorder line from `docs/MONETIZATION.md`. The s
 |---|---|
 | 50 | $12 |
 | 100 | $24 |
-| 250 | $72 |
-| 500 | $144 |
+| 250 | $60 |
+| 500 | $120 |
 
 *Note: AliExpress listing prices for the same ring are lower than Amazon (~$5–10), so the absolute commission is lower despite the similar percentage. The 9% accessories rate, if it applies, would yield $36–$360 at the same volumes.*
 
