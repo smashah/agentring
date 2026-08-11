@@ -1,7 +1,37 @@
+# Rust (pre-existing)
 /target
 **/*.rs.bk
 Cargo.lock
-.DS_Store
 *.dmg
 *.app
-/dist
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Local environment overrides
+.env
+.env.local
+.env.*.local
+.dev.vars
+.prod.vars
+
+# Build outputs & framework caches
+.turbo
+.output/
+.nitro/
+.tanstack/
+.wrangler/
+dist/
+out/
+build/
+coverage/
+
+# Debug
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / misc
+.DS_Store
+*.pem

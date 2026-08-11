@@ -1,0 +1,26 @@
+"$schema" = "node_modules/wrangler/config-schema.json"
+name = "agentring-website"
+account_id = "11b1f0d90e2e01f7787152098cb332c3"
+compatibility_date = "2026-08-11"
+compatibility_flags = ["nodejs_compat"]
+keep_vars = true
+workers_dev = true
+main = "./.output/server/index.mjs"
+no_bundle = true
+
+[assets]
+binding = "ASSETS"
+directory = "./.output/public/"
+
+[[rules]]
+type = "ESModule"
+globs = ["**/*.mjs", "**/*.js"]
+
+[observability]
+enabled = true
+
+[env.production]
+name = "agentring-website"
+routes = [
+  { pattern = "agentr.ing", custom_domain = true },
+]
