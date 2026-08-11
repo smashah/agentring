@@ -3,7 +3,6 @@
 //! Monitoring lists once it has actually REQUESTED the permission through the
 //! system API, which also shows the grant prompt. These call the real request
 //! APIs so the app populates the list on first click.
-#![cfg(target_os = "macos")]
 use core_foundation::base::TCFType;
 use core_foundation::boolean::CFBoolean;
 use core_foundation::dictionary::CFDictionary;

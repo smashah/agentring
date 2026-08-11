@@ -160,8 +160,8 @@ pub fn run(tx: Sender<Gesture>, state: SharedState) -> Result<(), String> {
         let matching = CFDictionaryCreateMutable(
             std::ptr::null(),
             0,
-            &kCFTypeDictionaryKeyCallBacks as *const _ as *const c_void,
-            &kCFTypeDictionaryValueCallBacks as *const _ as *const c_void,
+            &kCFTypeDictionaryKeyCallBacks as *const _,
+            &kCFTypeDictionaryValueCallBacks as *const _,
         );
         let vid_key = CFString::new("VendorID");
         let pid_key = CFString::new("ProductID");
@@ -226,8 +226,8 @@ pub fn ring_present() -> bool {
         let matching = CFDictionaryCreateMutable(
             std::ptr::null(),
             0,
-            &kCFTypeDictionaryKeyCallBacks as *const _ as *const c_void,
-            &kCFTypeDictionaryValueCallBacks as *const _ as *const c_void,
+            &kCFTypeDictionaryKeyCallBacks as *const _,
+            &kCFTypeDictionaryValueCallBacks as *const _,
         );
         if matching.is_null() {
             return false;
