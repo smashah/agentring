@@ -17,3 +17,5 @@ cargo run     # macOS: grant Input Monitoring + Accessibility on first run
 ```
 
 For Mohammed's internal signed install, `scripts/install-macos.sh` builds the release app, preserves the stable local signing identity used by macOS TCC, and installs it at `/Applications/Agent Ring.app`. It is not a public installer and depends on the dedicated local signing keychain on this Mac.
+
+For public distribution, `scripts/package-macos-release.sh` builds a separate app under `dist/`, signs it with Developer ID Application, submits it to Apple notarization, staples the ticket, verifies it with Gatekeeper, and creates a versioned ZIP plus SHA-256 file. It never replaces the installed app. The exact Account Holder certificate handoff and release commands are in `docs/RELEASE-MACOS.md`.
