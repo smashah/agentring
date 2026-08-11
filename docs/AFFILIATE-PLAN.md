@@ -16,9 +16,9 @@
 
 **Do not enrol every Amazon locale now.** OneLink is geo-redirection across a defined set of stores, not a worldwide tag [14]. Add the US only when Agent Ring has a verified US SKU and audience. From the US OneLink dashboard, Canada and EU5 can use the simplified single-store-ID controls described by Amazon [15], but the UK documentation still says country accounts must be created separately [16]. Treat that as a documentation mismatch: enable or link Canada, Germany, France, Italy, and Spain only through controls proven in the live dashboard. Japan, Singapore, Netherlands, Saudi Arabia, Poland, Sweden, and Australia explicitly require separate local accounts before their Store IDs can be linked [15].
 
-**Add AliExpress Affiliate after `agentr.ing` is live** for buyers where AliExpress is the preferred or cheaper marketplace. Same zero-cost model. The official agreement confirms that the live portal controls target countries and per-sale pricing [7]; it does not publish a primary-source cookie or WX02 commission. Review sites report 3% on electronics, up to 9% on accessories, and a 3-day cookie [3][4], but every one of those figures remains an **unverified scenario** until Mohammed sees the exact campaign in the portal.
+**Add AliExpress Affiliate now that `agentr.ing` is live** for buyers where AliExpress is the preferred or cheaper marketplace. Same zero-cost model. The official agreement confirms that the live portal controls target countries and per-sale pricing [7]; it does not publish a primary-source cookie or WX02 commission. Review sites report 3% on electronics, up to 9% on accessories, and a 3-day cookie [3][4], but every one of those figures remains an **unverified scenario** until Mohammed sees the exact campaign in the portal.
 
-**Add Alibaba.com Affiliate as the global wholesale CTA after the site is live.** One membership exposes affiliate products across 200+ supported countries [18], and the exact WX02 wholesale listing already exists [5]. Current primary rules publish a 60-day cookie and tiered new-buyer/existing-buyer commissions [20]. This is the best global affiliate option for teams, bulk orders, and future branding; it is separate from buying inventory and reselling it ourselves.
+**Add Alibaba.com Affiliate as the global wholesale CTA now that the site is live.** One membership exposes affiliate products across 200+ supported countries [18], and the exact WX02 wholesale listing already exists [5]. Current primary rules publish a 60-day cookie and tiered new-buyer/existing-buyer commissions [20]. This is the best global affiliate option for teams, bulk orders, and future branding; it is separate from buying inventory and reselling it ourselves.
 
 **Use eBay only as a conditional local fallback.** EPN has 14 participating affiliate sites [21], but no live listing has been physically verified as WX02 hardware. Add an eBay destination only when a compatible listing exists in a target country; do not model a numeric rate until that listing's category and regional rate card are known [23].
 
@@ -26,7 +26,7 @@
 
 **Sequenced path:**
 1. Use the confirmed UK Store ID/tag `agentring-21`
-2. Publish real Agent Ring content at `agentr.ing` before Amazon reviews the submitted properties
+2. Keep the verified-live Agent Ring content at `agentr.ing` reviewable while Amazon evaluates the submitted properties
 3. Identify and physically verify 1–2 UK SKU candidates; then generate direct tagged Amazon links
 4. Enrol Alibaba.com Affiliate for the exact WX02 wholesale listing and AliExpress after its portal exposes the real campaign economics
 5. Ship the one-page regional product router and tagged links in README + first-run onboarding
@@ -101,7 +101,7 @@ Do not create all of these accounts speculatively. Every separate account carrie
 
 ### Enrollment URL
 
-**https://affiliate-program.amazon.co.uk** — Amazon's confirmation page shows Store ID/tag `agentring-21` with **Success**. Amazon says it reviews the submitted Sites after three qualified sales [17]. The application listed `petrol.now`, `openwa.dev`, and `agentr.ing`; keep `agentr.ing` as the primary promotional property once it is live, and remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear there. Amazon reviews every submitted Site for public, original, active content, and tagged links must appear only on declared Sites [17]; it does not require every declared Site to discuss Agent Ring. Do not force unrelated cross-site content.
+**https://affiliate-program.amazon.co.uk** — Amazon's confirmation page shows Store ID/tag `agentring-21` with **Success**. Amazon says it reviews the submitted Sites after three qualified sales [17]. The application listed `petrol.now`, `openwa.dev`, and `agentr.ing`; keep the now-live `agentr.ing` as the primary promotional property, and remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear there. Amazon reviews every submitted Site for public, original, active content, and tagged links must appear only on declared Sites [17]; it does not require every declared Site to discuss Agent Ring. Do not force unrelated cross-site content.
 
 ### Effort
 
@@ -291,7 +291,7 @@ The commission rules effective 2026-07-01 publish these order-based rates [20]:
 
 The current cookie is 60 days, and a qualifying order must reach `Trade Completed` [20]. Traffic and orders from Mainland China, India, Russia, Nigeria, Cuba, Iran, North Korea, Syria, and Ukraine are excluded [20]. These published economics apply to the Alibaba.com Affiliate programme, not to AliExpress and not to branded resale.
 
-Use this programme for the exact WX02 wholesale listing [5] and team, event, agency, or own-brand intent. It is not the primary single-ring retail CTA. Enrolment can begin with a real individual or company identity and controlled media, but `agentr.ing` should be live first so the reviewed property matches the promotion.
+Use this programme for the exact WX02 wholesale listing [5] and team, event, agency, or own-brand intent. It is not the primary single-ring retail CTA. Enrolment can begin with a real individual or company identity and the now-live `agentr.ing` controlled media, so the reviewed property matches the promotion.
 
 ### eBay Partner Network — conditional local fallback
 
@@ -370,7 +370,9 @@ The confirmation surface proves that the Amazon Associates UK account was create
 
 The already-open tab is parked at Amazon's next account boundary: **Enter Payment and Tax Information**, with **Now** and **Later** choices. Mohammed must choose when to begin that financial/tax setup; an agent must not choose the timing or complete a tax interview on his behalf.
 
-Keep `agentr.ing` as the primary declared promotional property once it is live. Remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear on them. Then generate a direct tagged link only for a physically verified UK ring SKU. Receiving the tag starts the review clock but does not complete the remaining product gates below.
+Keep the now-live `agentr.ing` as the primary declared promotional property. Remove `petrol.now` and `openwa.dev` from the Site list before review unless Agent Ring tagged links genuinely appear on them. Then generate a direct tagged link only for a physically verified UK ring SKU. Receiving the tag starts the review clock but does not complete the remaining product gates below.
+
+AliExpress request `20260811T154836Z-13303` and Alibaba.com request `20260811T154845Z-13486` are preserved in the single browser-manager queue. Both are **deferred, not in progress**: on 2026-08-11 the fleet was under an absolute ground stop above the 10 GiB swap gate, and no browser-manager tab or worker existed to consume them. The browser manager is the first admission when the gate lifts. Until a named manager accepts them, no portal account, application, rate, cookie, or tracked-link state is claimed.
 
 ---
 
