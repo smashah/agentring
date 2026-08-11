@@ -184,7 +184,7 @@ fn build_tray(config: &Config) -> Option<TrayMenu> {
 /// is a black silhouette on transparent; template mode uses its alpha and
 /// recolours to match the menu bar.
 fn load_tray_icon() -> Option<tray_icon::Icon> {
-    let bytes = include_bytes!("../assets/logo_menubar.png");
+    let bytes = include_bytes!("../assets/brand/Gemini_Generated_Image_8x0lj88x0lj88x0l.png");
     let img = image::load_from_memory(bytes)
         .ok()?
         .resize_exact(22, 22, image::imageops::FilterType::Lanczos3)

@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import brandLogoUrl from '../../../../assets/logo.png?url';
-import ringProductUrl from '../../../../assets/logo_menubar.png?url';
+import brandMarkUrl from '../../../../assets/brand/Gemini_Generated_Image_8x0lj88x0lj88x0l.png?url';
 
 export const Route = createFileRoute('/')({
   component: Landing,
@@ -18,7 +17,7 @@ const gestures = [
 function BrandLockup({ compact = false }: { compact?: boolean }) {
   return (
     <span className={compact ? 'brand-lockup brand-lockup-compact' : 'brand-lockup'}>
-      <img src={brandLogoUrl} alt="" aria-hidden="true" />
+      <img src={brandMarkUrl} alt="" aria-hidden="true" />
       <span>Agent Ring</span>
     </span>
   );
@@ -46,16 +45,13 @@ function Landing() {
 
       <main id="main">
         <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-glow" aria-hidden="true">
-            <img src={brandLogoUrl} alt="" />
-          </div>
           <div className="shell hero-inner">
             <div className="hero-mark">
               <img
-                src={brandLogoUrl}
-                alt="Agent Ring — a ring, cursor and key"
-                width="1024"
-                height="1024"
+                src={brandMarkUrl}
+                alt="Agent Ring — line art of a Bluetooth finger ring"
+                width="2048"
+                height="2048"
                 fetchPriority="high"
               />
             </div>
@@ -87,7 +83,7 @@ function Landing() {
           <div className="shell product-layout">
             <div className="product-stage">
               <img
-                src={ringProductUrl}
+                src={brandMarkUrl}
                 alt="A black WX02-class Bluetooth finger ring"
                 width="2048"
                 height="2048"

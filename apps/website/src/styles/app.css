@@ -131,9 +131,10 @@ a {
 }
 
 .brand-lockup img {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.78rem;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  filter: invert(1) grayscale(1) contrast(1.08) drop-shadow(0 0 0.45rem rgba(255, 255, 255, 0.18));
 }
 
 .brand-lockup-compact {
@@ -179,21 +180,6 @@ a {
     radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.045), transparent 42%);
 }
 
-.hero-glow {
-  position: absolute;
-  z-index: -2;
-  inset: 4% 50% auto auto;
-  width: min(74vw, 760px);
-  transform: translateX(50%);
-  opacity: 0.2;
-  filter: blur(100px) saturate(1.35);
-  pointer-events: none;
-}
-
-.hero-glow img {
-  width: 100%;
-}
-
 .hero-inner {
   display: flex;
   flex-direction: column;
@@ -202,13 +188,12 @@ a {
 }
 
 .hero-mark {
-  width: clamp(9rem, 18vw, 14rem);
-  margin-bottom: clamp(2.4rem, 5vw, 4.5rem);
+  width: clamp(13rem, 27vw, 22rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2.75rem);
 }
 
 .hero-mark img {
-  border-radius: 24%;
-  box-shadow: 0 2.5rem 7rem rgba(0, 0, 0, 0.5);
+  filter: invert(1) grayscale(1) contrast(1.08) drop-shadow(0 1.75rem 3rem rgba(0, 0, 0, 0.58));
 }
 
 .eyebrow,
@@ -630,8 +615,8 @@ a {
   }
 
   .brand-lockup img {
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 2.6rem;
+    height: 2.6rem;
   }
 
   .header-inner nav {
@@ -651,7 +636,7 @@ a {
   }
 
   .hero-mark {
-    width: 8.5rem;
+    width: 12rem;
   }
 
   .hero-actions {
