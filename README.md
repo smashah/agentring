@@ -6,9 +6,9 @@ Reverse-engineered from the WX02 page-turner ring, built profile-first so any HI
 
 - **What it does:** captures the ring's digitizer reports, classifies tap and swipe-up/down/left/right gestures, and injects the keyboard action mapped to each — replacing per-device Karabiner hacks with one native app. Long-press consumer-key capture is not implemented yet.
 - **macOS status:** the core classifier, strict WX02 device validation, gesture-to-key injection, settings window, rich menu-bar tray, permission onboarding, editable mappings, and menu-bar-only app bundle are built. An internal build is installed and tested on Mohammed's Mac.
-- **Distribution status:** `https://agentr.ing` is live, but there is no public app download. A Developer ID Application certificate and Apple notarization are still required before publishing a macOS artifact.
+- **Distribution status:** [Agent Ring 0.1.0 for macOS](https://github.com/smashah/agentring/releases/download/v0.1.0/Agent-Ring-0.1.0-macOS.zip) is public, Developer ID signed, notarized by Apple, and Gatekeeper verified. Its [SHA-256 checksum](https://github.com/smashah/agentring/releases/download/v0.1.0/Agent-Ring-0.1.0-macOS.zip.sha256) is published alongside the download.
 - **Windows status:** no Windows build exists. The Raw Input and suppression design still needs a physical Windows 11 Bluetooth spike before implementation.
-- **Repository status:** private until a UK ring SKU is physically verified and direct tagged links are shipped — see `docs/MONETIZATION.md` and `docs/AFFILIATE-PLAN.md`.
+- **Repository status:** public. Hardware recommendations remain separate from the macOS app release — see `docs/MONETIZATION.md` and `docs/AFFILIATE-PLAN.md`.
 
 ## Build
 ```

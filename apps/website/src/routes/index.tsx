@@ -14,6 +14,9 @@ const gestures = [
   ['Long press', 'Anything'],
 ] as const;
 
+const macosDownloadUrl =
+  'https://github.com/smashah/agentring/releases/download/v0.1.0/Agent-Ring-0.1.0-macOS.zip';
+
 function BrandLockup({ compact = false }: { compact?: boolean }) {
   return (
     <span className={compact ? 'brand-lockup brand-lockup-compact' : 'brand-lockup'}>
@@ -62,8 +65,8 @@ function Landing() {
               Bluetooth ring into the keyboard shortcuts you choose.
             </p>
             <div className="hero-actions">
-              <a className="primary-action" href="#release">
-                Check the macOS release
+              <a className="primary-action" href={macosDownloadUrl}>
+                Download for macOS
               </a>
               <a className="text-action" href="#how-it-works">
                 See how it works <span aria-hidden="true">↓</span>
@@ -74,7 +77,7 @@ function Landing() {
               <span className="proof-divider" aria-hidden="true">
                 ·
               </span>
-              <span>Public download pending signing and notarization</span>
+              <span>Public notarized macOS download available</span>
             </p>
           </div>
         </section>
@@ -149,7 +152,7 @@ function Landing() {
           <div className="shell release-layout">
             <div>
               <p className="section-label">Release status</p>
-              <h2 id="release-title">Built on macOS. Not publicly released yet.</h2>
+              <h2 id="release-title">Agent Ring for macOS is ready to download.</h2>
             </div>
             <div className="release-copy">
               <p>
@@ -166,10 +169,12 @@ function Landing() {
                 </p>
               </div>
               <div className="release-state">
-                <span className="state-dot" aria-hidden="true" />
+                <span className="state-dot state-dot-live" aria-hidden="true" />
                 <p>
                   <strong>Public macOS download</strong>
-                  <span>Waiting for Developer ID signing and notarization</span>
+                  <span>
+                    <a href={macosDownloadUrl}>Version 0.1.0 — notarized by Apple</a>
+                  </span>
                 </p>
               </div>
               <div className="release-state">
